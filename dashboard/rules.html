@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Routing Rules Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .ios-blur {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 ios-blur border-b border-slate-200 dark:border-[#23482f]">
+<div class="flex items-center justify-between px-4 h-16">
+<div class="flex items-center">
+<span class="material-symbols-outlined text-2xl text-primary cursor-pointer">menu</span>
+</div>
+<h1 class="text-lg font-bold tracking-tight">Routing Rules</h1>
+<div class="flex items-center gap-2">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-2xl text-primary">add</span>
+</button>
+</div>
+</div>
+<!-- Filter Tabs -->
+<div class="flex px-4 gap-6 overflow-x-auto no-scrollbar">
+<a class="flex flex-col items-center pt-3 pb-2 border-b-2 border-primary text-primary" href="#">
+<span class="text-sm font-bold uppercase tracking-wider">All</span>
+</a>
+<a class="flex flex-col items-center pt-3 pb-2 border-b-2 border-transparent text-slate-500 dark:text-[#92c9a4] hover:text-primary transition-colors" href="#">
+<span class="text-sm font-bold uppercase tracking-wider whitespace-nowrap">Domain</span>
+</a>
+<a class="flex flex-col items-center pt-3 pb-2 border-b-2 border-transparent text-slate-500 dark:text-[#92c9a4] hover:text-primary transition-colors" href="#">
+<span class="text-sm font-bold uppercase tracking-wider whitespace-nowrap">IP CIDR</span>
+</a>
+<a class="flex flex-col items-center pt-3 pb-2 border-b-2 border-transparent text-slate-500 dark:text-[#92c9a4] hover:text-primary transition-colors" href="#">
+<span class="text-sm font-bold uppercase tracking-wider whitespace-nowrap">Keyword</span>
+</a>
+</div>
+</header>
+<!-- Search/Stats Area -->
+<div class="p-4 bg-background-light dark:bg-background-dark">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#92c9a4] text-xl">search</span>
+<input class="w-full bg-slate-100 dark:bg-[#1a3222] border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 text-white placeholder-slate-500 dark:placeholder-[#92c9a4]/50" placeholder="Search rules..." type="text"/>
+</div>
+</div>
+<!-- Rules List -->
+<main class="flex-1 overflow-y-auto px-4 pb-20">
+<div class="space-y-2">
+<!-- Rule Item: Domain -->
+<div class="flex items-center gap-4 bg-white dark:bg-[#162d1e] p-4 rounded-xl border border-slate-100 dark:border-[#23482f] shadow-sm">
+<div class="flex items-center justify-center rounded-lg bg-primary/10 dark:bg-[#23482f] shrink-0 size-12">
+<span class="material-symbols-outlined text-primary">public</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-bold truncate">google.com</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-[#23482f] text-slate-500 dark:text-[#92c9a4]">Domain</span>
+</div>
+</div>
+<div class="text-right flex flex-col items-end gap-1">
+<span class="text-sm font-medium text-primary">Google Group</span>
+<div class="w-8 h-1 rounded-full bg-primary/40"></div>
+</div>
+</div>
+<!-- Rule Item: IP CIDR -->
+<div class="flex items-center gap-4 bg-white dark:bg-[#162d1e] p-4 rounded-xl border border-slate-100 dark:border-[#23482f] shadow-sm">
+<div class="flex items-center justify-center rounded-lg bg-primary/10 dark:bg-[#23482f] shrink-0 size-12">
+<span class="material-symbols-outlined text-primary">lan</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-bold truncate">1.1.1.1/32</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-[#23482f] text-slate-500 dark:text-[#92c9a4]">IP CIDR</span>
+</div>
+</div>
+<div class="text-right flex flex-col items-end gap-1">
+<span class="text-sm font-medium text-blue-400">Direct</span>
+<div class="w-8 h-1 rounded-full bg-blue-400/40"></div>
+</div>
+</div>
+<!-- Rule Item: Keyword -->
+<div class="flex items-center gap-4 bg-white dark:bg-[#162d1e] p-4 rounded-xl border border-slate-100 dark:border-[#23482f] shadow-sm">
+<div class="flex items-center justify-center rounded-lg bg-primary/10 dark:bg-[#23482f] shrink-0 size-12">
+<span class="material-symbols-outlined text-primary">key</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-bold truncate">netflix</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-[#23482f] text-slate-500 dark:text-[#92c9a4]">Keyword</span>
+</div>
+</div>
+<div class="text-right flex flex-col items-end gap-1">
+<span class="text-sm font-medium text-orange-400">Proxy</span>
+<div class="w-8 h-1 rounded-full bg-orange-400/40"></div>
+</div>
+</div>
+<!-- Rule Item: GeoIP -->
+<div class="flex items-center gap-4 bg-white dark:bg-[#162d1e] p-4 rounded-xl border border-slate-100 dark:border-[#23482f] shadow-sm">
+<div class="flex items-center justify-center rounded-lg bg-primary/10 dark:bg-[#23482f] shrink-0 size-12">
+<span class="material-symbols-outlined text-primary">map</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-bold truncate">geoip:cn</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-[#23482f] text-slate-500 dark:text-[#92c9a4]">GeoIP</span>
+</div>
+</div>
+<div class="text-right flex flex-col items-end gap-1">
+<span class="text-sm font-medium text-blue-400">Direct</span>
+<div class="w-8 h-1 rounded-full bg-blue-400/40"></div>
+</div>
+</div>
+<!-- Rule Item: Process Name -->
+<div class="flex items-center gap-4 bg-white dark:bg-[#162d1e] p-4 rounded-xl border border-slate-100 dark:border-[#23482f] shadow-sm">
+<div class="flex items-center justify-center rounded-lg bg-primary/10 dark:bg-[#23482f] shrink-0 size-12">
+<span class="material-symbols-outlined text-primary">terminal</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-bold truncate">telegram.desktop</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-[#23482f] text-slate-500 dark:text-[#92c9a4]">Process</span>
+</div>
+</div>
+<div class="text-right flex flex-col items-end gap-1">
+<span class="text-sm font-medium text-orange-400">Singapore #1</span>
+<div class="w-8 h-1 rounded-full bg-orange-400/40"></div>
+</div>
+</div>
+<!-- Rule Item: Port -->
+<div class="flex items-center gap-4 bg-white dark:bg-[#162d1e] p-4 rounded-xl border border-slate-100 dark:border-[#23482f] shadow-sm">
+<div class="flex items-center justify-center rounded-lg bg-primary/10 dark:bg-[#23482f] shrink-0 size-12">
+<span class="material-symbols-outlined text-primary">settings_ethernet</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-bold truncate">Port 22, 80, 443</p>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-[#23482f] text-slate-500 dark:text-[#92c9a4]">Port Range</span>
+</div>
+</div>
+<div class="text-right flex flex-col items-end gap-1">
+<span class="text-sm font-medium text-primary">Global Group</span>
+<div class="w-8 h-1 rounded-full bg-primary/40"></div>
+</div>
+</div>
+</div>
+</main>
+<!-- Navigation Tab Bar (iOS style) -->
+<nav class="fixed bottom-0 left-0 right-0 bg-background-light/95 dark:bg-background-dark/95 ios-blur border-t border-slate-200 dark:border-[#23482f] pb-safe">
+<div class="flex items-center justify-around h-16">
+<button class="flex flex-col items-center justify-center w-full text-slate-400 dark:text-[#92c9a4]">
+<a href="overview.html"><span class="material-symbols-outlined">dashboard</span></a>
+<a href="overview.html"><span class="text-[10px] mt-1 font-medium">Status</span></a>
+</button>
+<button class="flex flex-col items-center justify-center w-full text-slate-400 dark:text-[#92c9a4]">
+<span class="material-symbols-outlined">network_check</span>
+<a href="proxies.html"><span class="text-[10px] mt-1 font-medium">Proxies</span></a>
+</button>
+<button class="flex flex-col items-center justify-center w-full text-primary">
+<span class="material-symbols-outlined">account_tree</span>
+<a href="rules.html"><span class="text-[10px] mt-1 font-bold">Rules</span></a>
+</button>
+<button class="flex flex-col items-center justify-center w-full text-slate-400 dark:text-[#92c9a4]">
+<span class="material-symbols-outlined">description</span>
+<a href="logs.html"><span class="text-[10px] mt-1 font-medium">Logs</span></a>
+</button>
+<button class="flex flex-col items-center justify-center w-full text-slate-400 dark:text-[#92c9a4]">
+<a href="config.html"><span class="material-symbols-outlined">settings</span></a>
+<a href="config.html"><span class="text-[10px] mt-1 font-medium">Config</span></a>
+</button>
+</div>
+</nav>
+</body></html>
