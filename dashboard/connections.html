@@ -9,6 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
+
+
+
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -26,6 +29,9 @@
                 },
             },
         }
+
+
+
     </script>
 <style>
         body {
@@ -53,25 +59,9 @@
     }
   </style>
   </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display">
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen">
 <!-- Top Navigation Bar -->
-<nav class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
-<div class="flex items-center justify-between p-4 pb-3">
-<div class="flex items-center gap-3">
-<div class="bg-primary/20 p-2 rounded-lg">
-<span class="material-symbols-outlined text-primary block">swap_calls</span>
-</div>
-<div>
-<h1 class="text-lg font-bold leading-none">Connections</h1>
-<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">42 Active Sockets</p>
-</div>
-</div>
-<button class="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-destructive/50 text-destructive text-sm font-bold hover:bg-destructive/10 transition-colors">
-<span class="material-symbols-outlined text-sm">close</span>
-                Close All
-            </button>
-</div>
-</nav>
+
 <!-- Stats Dashboard Overlay -->
 <div class="flex flex-wrap gap-3 p-4">
 <div class="flex min-w-[140px] flex-1 flex-col gap-1 rounded-xl p-4 bg-white dark:bg-[#1a2235] border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -251,12 +241,7 @@
 </div>
 </div>
 </div>
-<!-- Tab Bar (iOS style) -->
-<div class="fixed bottom-0 left-0 right-0 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-6 py-2 flex justify-between items-center z-50">
-<div class="flex flex-col items-center gap-1 text-slate-400">
-<a href="overview.html"><span class="material-symbols-outlined text-2xl">dashboard</span></a>
-<a href="overview.html"><span class="text-[10px] font-medium">Overview</span></a>
-</div>
+
 <div class="flex flex-col items-center gap-1 text-slate-400">
 <span class="material-symbols-outlined text-2xl">account_tree</span>
 <a href="proxies.html"><span class="text-[10px] font-medium">Proxies</span></a>
@@ -270,4 +255,29 @@
 <a href="config.html"><span class="text-[10px] font-medium">Settings</span></a>
 </div>
 </div>
+<nav id="main-nav" class="fixed bottom-0 left-0 right-0 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-2 flex justify-between items-center z-50">
+        <a href="overview.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> dashboard </span>
+            <span class="text-[10px] font-medium"> Overview </span>
+        </a>
+        <a href="proxies.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> shield_with_heart </span>
+            <span class="text-[10px] font-medium"> Proxies </span>
+        </a>
+        <a href="rules.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> rule </span>
+            <span class="text-[10px] font-medium"> Rules </span>
+        </a>
+        <a href="connections.html" class="flex flex-col items-center gap-1 text-primary">
+            <span class="material-symbols-outlined text-2xl"> sync_alt </span>
+            <span class="text-[10px] font-bold"> Conns </span>
+        </a>
+        <a href="logs.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> terminal </span>
+            <span class="text-[10px] font-medium"> Logs </span>
+        </a>
+        <a href="config.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> settings </span>
+            <span class="text-[10px] font-medium"> Config </span>
+        </a></nav>
 </body></html>

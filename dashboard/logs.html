@@ -8,20 +8,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     <script id="tailwind-config">
+
+
+
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#13ec5b",
-                        "background-light": "#f6f8f7",
-                        "background-dark": "#0a0f0c",
-                        "terminal-dark": "#050806",
-                        "surface-dark": "#111814"
-                    }
-                }
-            }
+                        "primary": "#2b6cee",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "destructive": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
         }
+
+
+
     </script>
     <style>
         body { font-family: 'Space Grotesk', sans-serif; }
@@ -29,7 +38,7 @@
         .log-container::-webkit-scrollbar-thumb { background: rgba(19, 236, 91, 0.2); border-radius: 10px; }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white h-screen overflow-hidden">
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen">
     <div class="relative flex flex-col h-full w-full">
         <!-- Header -->
         <header class="p-4 bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-white/5 shrink-0">
@@ -66,26 +75,7 @@
         </main>
 
         <!-- Bottom Navigation -->
-        <nav class="bg-background-light dark:bg-surface-dark/80 backdrop-blur-xl border-t border-slate-200 dark:border-white/5 px-6 pb-8 pt-3 shrink-0">
-            <div class="flex justify-between items-center max-w-sm mx-auto">
-                <a href="overview.html" class="flex flex-col items-center gap-1 opacity-50">
-                    <span class="material-symbols-outlined text-[26px]">dashboard</span>
-                    <span class="text-[10px] font-medium">Overview</span>
-                </a>
-                <a href="proxies.html" class="flex flex-col items-center gap-1 opacity-50">
-                    <span class="material-symbols-outlined text-[26px]">swap_calls</span>
-                    <span class="text-[10px] font-medium">Proxies</span>
-                </a>
-                <a href="logs.html" class="flex flex-col items-center gap-1 text-primary">
-                    <span class="material-symbols-outlined text-[26px]">terminal</span>
-                    <span class="text-[10px] font-bold">Logs</span>
-                </a>
-                <a href="config.html" class="flex flex-col items-center gap-1 opacity-50">
-                    <span class="material-symbols-outlined text-[26px]">settings</span>
-                    <span class="text-[10px] font-medium">Config</span>
-                </a>
-            </div>
-        </nav>
+
     </div>
 
     <script type="module">
@@ -159,5 +149,30 @@
             console.error('Failed to connect to logs WebSocket', e);
         }
     </script>
+<nav id="main-nav" class="fixed bottom-0 left-0 right-0 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-2 flex justify-between items-center z-50">
+        <a href="overview.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> dashboard </span>
+            <span class="text-[10px] font-medium"> Overview </span>
+        </a>
+        <a href="proxies.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> shield_with_heart </span>
+            <span class="text-[10px] font-medium"> Proxies </span>
+        </a>
+        <a href="rules.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> rule </span>
+            <span class="text-[10px] font-medium"> Rules </span>
+        </a>
+        <a href="connections.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> sync_alt </span>
+            <span class="text-[10px] font-medium"> Conns </span>
+        </a>
+        <a href="logs.html" class="flex flex-col items-center gap-1 text-primary">
+            <span class="material-symbols-outlined text-2xl"> terminal </span>
+            <span class="text-[10px] font-bold"> Logs </span>
+        </a>
+        <a href="config.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> settings </span>
+            <span class="text-[10px] font-medium"> Config </span>
+        </a></nav>
 </body>
 </html>
