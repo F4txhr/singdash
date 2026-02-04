@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-
-<html class="dark" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Sing-box Dashboard Overview</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Sing-box Dashboard Overview</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
         theme: {
@@ -18,183 +17,113 @@
               "background-light": "#f6f8f6",
               "background-dark": "#102216",
             },
-            fontFamily: {
-              "display": ["Space Grotesk"]
-            },
-            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            fontFamily: { "display": ["Space Grotesk", "sans-serif"] },
           },
         },
       }
     </script>
-<style>
-        body {
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        .material-symbols-outlined.fill {
-            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
     </style>
-<style>
-    body {
-      min-height: max(884px, 100dvh);
-    }
-  </style>
-  </head>
-<body class="bg-background-light dark:bg-background-dark text-white font-display antialiased">
-<!-- Mobile Navigation Drawer (Overlay for visualization, usually triggered by hamburger) -->
-<!-- Note: Hidden in this static mockup to show the main content, but structured as requested -->
-<div class="fixed inset-y-0 left-0 z-50 w-72 bg-background-light dark:bg-[#112217] border-r border-white/10 hidden">
-<div class="flex flex-col h-full p-4">
-<div class="flex items-center gap-3 px-4 py-8">
-<div class="size-8 bg-primary rounded-lg flex items-center justify-center">
-<span class="material-symbols-outlined text-background-dark font-bold">box</span>
-</div>
-<h1 class="text-xl font-bold tracking-tight">Sing-box</h1>
-</div>
-<ul class="flex flex-col gap-2">
-<li class="flex h-12 items-center gap-4 rounded-lg px-4 bg-primary/20 text-primary">
-<a href="overview.html"><span class="material-symbols-outlined fill">dashboard</span></a>
-<a href="overview.html"><p class="text-base font-bold leading-tight truncate">Overview</p></a>
-</li>
-<li class="flex h-12 items-center gap-4 rounded-lg px-4 text-white/60 hover:text-white">
-<span class="material-symbols-outlined">swap_calls</span>
-<a href="proxies.html"><p class="text-base font-bold leading-tight truncate">Proxies</p></a>
-</li>
-<li class="flex h-12 items-center gap-4 rounded-lg px-4 text-white/60 hover:text-white">
-<span class="material-symbols-outlined">rule</span>
-<a href="rules.html"><p class="text-base font-bold leading-tight truncate">Rules</p></a>
-</li>
-<li class="flex h-12 items-center gap-4 rounded-lg px-4 text-white/60 hover:text-white">
-<span class="material-symbols-outlined">hub</span>
-<a href="connections.html"><p class="text-base font-bold leading-tight truncate">Connections</p></a>
-</li>
-<li class="flex h-12 items-center gap-4 rounded-lg px-4 text-white/60 hover:text-white">
-<span class="material-symbols-outlined">history_edu</span>
-<a href="logs.html"><p class="text-base font-bold leading-tight truncate">Logs</p></a>
-</li>
-<li class="flex h-12 items-center gap-4 rounded-lg px-4 text-white/60 hover:text-white">
-<a href="config.html"><span class="material-symbols-outlined">settings</span></a>
-<a href="config.html"><p class="text-base font-bold leading-tight truncate">Config</p></a>
-</li>
-</ul>
-</div>
-</div>
-<!-- Main Content Area -->
-<div class="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden">
-<!-- TopAppBar -->
-<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-40">
-<div class="text-white flex size-12 shrink-0 items-center">
-<span class="material-symbols-outlined text-2xl">menu</span>
-</div>
-<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Overview</h2>
-<div class="flex w-12 items-center justify-end">
-<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 bg-transparent text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
-<a href="config.html"><span class="material-symbols-outlined text-2xl">settings</span></a>
-</button>
-</div>
-</div>
-<!-- Stats Section -->
-<div class="flex flex-wrap gap-4 p-4">
-<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 bg-white/5 border border-white/10">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-primary text-sm">upload</span>
-<p class="text-white/60 text-sm font-medium leading-normal uppercase tracking-wider">Upload</p>
-</div>
-<p class="text-white tracking-tight text-3xl font-bold leading-tight">12 <span class="text-lg font-medium opacity-60">KB/s</span></p>
-</div>
-<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 bg-white/5 border border-white/10">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-primary text-sm">download</span>
-<p class="text-white/60 text-sm font-medium leading-normal uppercase tracking-wider">Download</p>
-</div>
-<p class="text-white tracking-tight text-3xl font-bold leading-tight">2.5 <span class="text-lg font-medium opacity-60">MB/s</span></p>
-</div>
-</div>
-<!-- Section Header -->
-<h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Network Traffic</h3>
-<!-- Charts Section -->
-<div class="flex flex-wrap gap-4 px-4 py-2">
-<div class="flex min-w-72 flex-1 flex-col gap-2 bg-white/5 border border-white/10 rounded-xl p-4">
-<div class="flex justify-between items-start mb-4">
-<div>
-<p class="text-white tracking-tight text-2xl font-bold leading-tight truncate">Total usage</p>
-<div class="flex gap-2 items-center">
-<p class="text-white/50 text-xs font-normal leading-normal">Last 60 seconds</p>
-<span class="px-1.5 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-bold">+5%</span>
-</div>
-</div>
-<span class="material-symbols-outlined text-white/20">monitoring</span>
-</div>
-<div class="flex min-h-[180px] flex-1 flex-col gap-4">
-<svg fill="none" height="148" preserveaspectratio="none" viewbox="-3 0 478 150" width="100%" xmlns="http://www.w3.org/2000/svg">
-<defs>
-<lineargradient gradientunits="userSpaceOnUse" id="paint0_linear_traffic" x1="236" x2="236" y1="1" y2="149">
-<stop stop-color="#13ec5b" stop-opacity="0.3"></stop>
-<stop offset="1" stop-color="#13ec5b" stop-opacity="0"></stop>
-</lineargradient>
-</defs>
-<path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25V149H326.769H0V109Z" fill="url(#paint0_linear_traffic)"></path>
-<path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25" stroke="#13ec5b" stroke-linecap="round" stroke-width="3"></path>
-</svg>
-<div class="flex justify-between border-t border-white/5 pt-2">
-<p class="text-white/40 text-[10px] font-bold tracking-widest uppercase">0s</p>
-<p class="text-white/40 text-[10px] font-bold tracking-widest uppercase">30s</p>
-<p class="text-white/40 text-[10px] font-bold tracking-widest uppercase">60s</p>
-</div>
-</div>
-</div>
-</div>
-<!-- Connection Details Header -->
-<h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-6">Active Status</h3>
-<!-- Status List (New component to match the YACD/Sing-box vibe) -->
-<div class="px-4 pb-8 space-y-3">
-<div class="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl">
-<div class="flex items-center gap-3">
-<div class="size-2 rounded-full bg-primary shadow-[0_0_8px_#13ec5b]"></div>
-<span class="text-white text-sm font-medium">Service Status</span>
-</div>
-<span class="text-primary text-sm font-bold uppercase tracking-wider">Running</span>
-</div>
-<div class="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl">
-<div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-white/40 text-sm">dns</span>
-<span class="text-white text-sm font-medium">Selected Proxy</span>
-</div>
-<span class="text-white/60 text-sm font-medium">HK-Premium-01</span>
-</div>
-<div class="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl">
-<div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-white/40 text-sm">schedule</span>
-<span class="text-white text-sm font-medium">Uptime</span>
-</div>
-<span class="text-white/60 text-sm font-medium">04:12:33</span>
-</div>
-</div>
-<!-- Bottom Navigation Bar (Typical for iOS style) -->
-<div class="mt-auto border-t border-white/10 bg-background-dark/80 backdrop-blur-md flex justify-around p-3 sticky bottom-0">
-<div class="flex flex-col items-center gap-1 text-primary">
-<a href="overview.html"><span class="material-symbols-outlined fill">dashboard</span></a>
-<a href="overview.html"><span class="text-[10px] font-bold">Overview</span></a>
-</div>
-<div class="flex flex-col items-center gap-1 text-white/40">
-<span class="material-symbols-outlined">swap_calls</span>
-<a href="proxies.html"><span class="text-[10px] font-bold">Proxies</span></a>
-</div>
-<div class="flex flex-col items-center gap-1 text-white/40">
-<span class="material-symbols-outlined">hub</span>
-<a href="connections.html"><span class="text-[10px] font-bold">Conns</span></a>
-</div>
-<div class="flex flex-col items-center gap-1 text-white/40">
-<span class="material-symbols-outlined">history_edu</span>
-<a href="logs.html"><span class="text-[10px] font-bold">Logs</span></a>
-</div>
-<div class="flex flex-col items-center gap-1 text-white/40">
-<a href="config.html"><span class="material-symbols-outlined">settings</span></a>
-<a href="config.html"><span class="text-[10px] font-bold">Config</span></a>
-</div>
-</div>
-</div>
-</body></html>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-white font-display antialiased min-h-screen">
+    <div class="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden">
+        <!-- TopAppBar -->
+        <div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-40">
+            <div class="text-white flex size-12 shrink-0 items-center">
+                <span class="material-symbols-outlined text-2xl">menu</span>
+            </div>
+            <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Overview</h2>
+            <div class="flex w-12 items-center justify-end">
+                <a href="config.html" class="flex size-12 items-center justify-end">
+                    <span class="material-symbols-outlined text-2xl text-white">settings</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="flex flex-wrap gap-4 p-4">
+            <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 bg-white/5 border border-white/10">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-sm">upload</span>
+                    <p class="text-white/60 text-sm font-medium leading-normal uppercase tracking-wider">Upload</p>
+                </div>
+                <p id="upload-speed" class="text-white tracking-tight text-3xl font-bold leading-tight">0 <span class="text-lg font-medium opacity-60">B/s</span></p>
+            </div>
+            <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 bg-white/5 border border-white/10">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-sm">download</span>
+                    <p class="text-white/60 text-sm font-medium leading-normal uppercase tracking-wider">Download</p>
+                </div>
+                <p id="download-speed" class="text-white tracking-tight text-3xl font-bold leading-tight">0 <span class="text-lg font-medium opacity-60">B/s</span></p>
+            </div>
+        </div>
+
+        <!-- Section Header -->
+        <h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Network Traffic</h3>
+        <div class="px-4 py-2">
+            <div class="bg-white/5 border border-white/10 rounded-xl p-4 min-h-[150px] flex items-center justify-center">
+                 <p class="text-white/40 text-sm italic">Traffic chart visualization will be integrated with real-time data.</p>
+            </div>
+        </div>
+
+        <!-- Status Section -->
+        <h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-6">Active Status</h3>
+        <div class="px-4 pb-32 space-y-3">
+            <div class="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <div id="service-dot" class="size-2 rounded-full bg-primary shadow-[0_0_8px_#13ec5b]"></div>
+                    <span class="text-white text-sm font-medium">Service Status</span>
+                </div>
+                <span id="service-status" class="text-primary text-sm font-bold uppercase tracking-wider">Running</span>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation Bar -->
+        <div class="mt-auto border-t border-white/10 bg-background-dark/80 backdrop-blur-md flex justify-around p-3 sticky bottom-0">
+            <a href="overview.html" class="flex flex-col items-center gap-1 text-primary">
+                <span class="material-symbols-outlined fill">dashboard</span>
+                <span class="text-[10px] font-bold">Overview</span>
+            </a>
+            <a href="proxies.html" class="flex flex-col items-center gap-1 text-white/40">
+                <span class="material-symbols-outlined">swap_calls</span>
+                <span class="text-[10px] font-bold">Proxies</span>
+            </a>
+            <a href="connections.html" class="flex flex-col items-center gap-1 text-white/40">
+                <span class="material-symbols-outlined">hub</span>
+                <span class="text-[10px] font-bold">Conns</span>
+            </a>
+            <a href="logs.html" class="flex flex-col items-center gap-1 text-white/40">
+                <span class="material-symbols-outlined">history_edu</span>
+                <span class="text-[10px] font-bold">Logs</span>
+            </a>
+            <a href="config.html" class="flex flex-col items-center gap-1 text-white/40">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="text-[10px] font-bold">Config</span>
+            </a>
+        </div>
+    </div>
+
+    <script type="module">
+        import api from './js/api.js';
+        import { formatBytes } from './js/utils.js';
+
+        const uploadEl = document.getElementById('upload-speed');
+        const downloadEl = document.getElementById('download-speed');
+
+        try {
+            api.getTraffic((data) => {
+                const up = formatBytes(data.up).split(' ');
+                const down = formatBytes(data.down).split(' ');
+
+                uploadEl.innerHTML = `${up[0]} <span class="text-lg font-medium opacity-60">${up[1]}/s</span>`;
+                downloadEl.innerHTML = `${down[0]} <span class="text-lg font-medium opacity-60">${down[1]}/s</span>`;
+            });
+        } catch (e) {
+            console.error('Failed to connect to traffic WebSocket', e);
+        }
+    </script>
+</body>
+</html>

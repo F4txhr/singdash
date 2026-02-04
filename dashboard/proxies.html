@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-
-<html class="dark" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Proxies Selection Screen</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Proxies Selection</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -18,182 +17,118 @@
                         "background-light": "#f6f8f6",
                         "background-dark": "#102216",
                     },
-                    fontFamily: {
-                        "display": ["Space Grotesk", "sans-serif"]
-                    },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    fontFamily: { "display": ["Space Grotesk", "sans-serif"] },
                 },
             },
         }
     </script>
-<style>
-        .active-glow {
-            box-shadow: 0 0 15px rgba(19, 236, 91, 0.2);
-            border: 1px solid #13ec5b;
-        }
-        .node-card {
-            transition: all 0.2s ease-in-out;
-        }
-        body {
-            font-family: "Space Grotesk", sans-serif;
-        }
+    <style>
+        .active-glow { box-shadow: 0 0 15px rgba(19, 236, 91, 0.2); border: 1px solid #13ec5b; }
+        body { font-family: "Space Grotesk", sans-serif; }
     </style>
-<style>
-    body {
-      min-height: max(884px, 100dvh);
-    }
-  </style>
-  </head>
+</head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen">
-<!-- Top Navigation Bar -->
-<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 px-4 py-3 flex items-center justify-between">
-<div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-primary">router</span>
-<h1 class="text-xl font-bold tracking-tight">Proxies</h1>
-</div>
-<button class="flex items-center gap-2 border border-primary/50 text-primary px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-primary/10 transition-colors">
-<span class="material-symbols-outlined text-[18px]">speed</span>
-<span>Test Latency</span>
-</button>
-</header>
-<!-- Filters / Chips -->
-<div class="flex gap-2 p-4 overflow-x-auto no-scrollbar">
-<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary text-background-dark px-4 font-bold shadow-lg shadow-primary/20">
-<span class="material-symbols-outlined text-[18px]">grid_view</span>
-<p class="text-sm">All</p>
-</div>
-<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-white/5 border border-white/10 px-4 text-white/70 hover:text-white transition-colors">
-<span class="material-symbols-outlined text-[18px]">public</span>
-<p class="text-sm font-medium">Global</p>
-</div>
-<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-white/5 border border-white/10 px-4 text-white/70 hover:text-white transition-colors">
-<span class="material-symbols-outlined text-[18px]">rule</span>
-<p class="text-sm font-medium">Rule</p>
-</div>
-<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-white/5 border border-white/10 px-4 text-white/70 hover:text-white transition-colors">
-<span class="material-symbols-outlined text-[18px]">bolt</span>
-<p class="text-sm font-medium">Direct</p>
-</div>
-</div>
-<!-- Proxy Selection Main Content -->
-<main class="pb-24">
-<!-- Section: Proxy (Manual Select) -->
-<section class="mb-6">
-<div class="flex items-center justify-between px-4 pb-3">
-<h2 class="text-lg font-bold">Proxy <span class="text-xs font-normal opacity-50 ml-2">(Manual Select)</span></h2>
-<span class="text-primary text-sm font-medium">HK-Direct-01</span>
-</div>
-<div class="grid grid-cols-2 gap-3 px-4">
-<!-- Active Node -->
-<div class="node-card active-glow bg-primary/10 rounded-xl p-3 flex flex-col justify-between h-24 relative overflow-hidden">
-<div class="flex justify-between items-start">
-<span class="text-white font-bold text-sm leading-tight">HK-Direct-01</span>
-<div class="size-2 bg-primary rounded-full animate-pulse"></div>
-</div>
-<div class="flex items-end justify-between">
-<span class="text-primary font-bold text-xs">42 ms</span>
-<span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
-</div>
-</div>
-<!-- Slow Node -->
-<div class="node-card bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col justify-between h-24">
-<span class="text-white/80 font-medium text-sm leading-tight">JP-Tokyo-05</span>
-<div class="flex items-end justify-between">
-<span class="text-red-500 font-bold text-xs">500 ms</span>
-</div>
-</div>
-<!-- Moderate Node -->
-<div class="node-card bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col justify-between h-24">
-<span class="text-white/80 font-medium text-sm leading-tight">US-Premium-04</span>
-<div class="flex items-end justify-between">
-<span class="text-amber-400 font-bold text-xs">180 ms</span>
-</div>
-</div>
-<!-- Available Node -->
-<div class="node-card bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col justify-between h-24">
-<span class="text-white/80 font-medium text-sm leading-tight">SG-Gaming-02</span>
-<div class="flex items-end justify-between">
-<span class="text-primary font-bold text-xs">95 ms</span>
-</div>
-</div>
-</div>
-</section>
-<!-- Section: Google (Auto) -->
-<section class="mb-6">
-<div class="flex items-center justify-between px-4 pb-3 pt-2">
-<h2 class="text-lg font-bold">Google <span class="text-xs font-normal opacity-50 ml-2">(Auto URL-Test)</span></h2>
-<div class="flex items-center gap-1">
-<span class="material-symbols-outlined text-white/40 text-[16px]">sync</span>
-<span class="text-primary text-sm font-medium">US-Premium-04</span>
-</div>
-</div>
-<div class="flex gap-3 px-4 overflow-x-auto no-scrollbar pb-2">
-<!-- Compact Nodes for horizontal scroll -->
-<div class="min-w-[140px] bg-white/5 border border-white/10 rounded-lg p-3 flex items-center justify-between gap-3">
-<div class="flex flex-col">
-<span class="text-white/60 text-xs uppercase font-bold tracking-wider">Default</span>
-<span class="text-white text-sm font-medium truncate">Direct</span>
-</div>
-<span class="material-symbols-outlined text-white/20 text-[20px]">directions</span>
-</div>
-<div class="min-w-[140px] bg-primary/10 border border-primary/30 rounded-lg p-3 flex items-center justify-between gap-3">
-<div class="flex flex-col">
-<span class="text-primary text-xs uppercase font-bold tracking-wider">Selected</span>
-<span class="text-white text-sm font-medium truncate">US-Prem-04</span>
-</div>
-<span class="text-primary font-bold text-xs">180ms</span>
-</div>
-<div class="min-w-[140px] bg-white/5 border border-white/10 rounded-lg p-3 flex items-center justify-between gap-3">
-<div class="flex flex-col">
-<span class="text-white/60 text-xs uppercase font-bold tracking-wider">Backup</span>
-<span class="text-white text-sm font-medium truncate">SG-Gaming-02</span>
-</div>
-<span class="text-primary font-bold text-xs">95ms</span>
-</div>
-</div>
-</section>
-<!-- Section: Visual Map/Status (Decorative but useful) -->
-<section class="px-4">
-<h2 class="text-lg font-bold mb-3">Traffic Overview</h2>
-<div class="w-full h-32 rounded-xl bg-white/5 border border-white/10 relative overflow-hidden group">
-<div class="absolute inset-0 opacity-20 grayscale brightness-150 transition-all group-hover:opacity-40" data-alt="Minimalist world map illustration for traffic routing" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAxE7n6JErn_zzLlIEjSHtRCKOyPRlc2VSpiWSp-VqNpETFC33mlJdmMuA-Tv0qcy-F0RhKZIb2_2uv1GZIv-M1MP94sKNJl0dOBhXaCIydzgGtr8yXvUNzQDoxze_os2wvXdYP7siwq3Ml4nsZapDIlaAonQto7XfxQIuO6brQjVLbP5VYYYnNjiQIOoONyW5XN7x6g5TqgeSJs6YD7_3NicaSzYGgRhTDAjGJ1q_fW_O0qBFeBN8JtL0xrVe4vUCgoFRnaa3Whjk"); background-size: cover; background-position: center;'></div>
-<div class="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent"></div>
-<div class="absolute bottom-3 left-4 flex gap-4">
-<div class="flex flex-col">
-<span class="text-[10px] text-white/50 uppercase font-bold">Upload</span>
-<span class="text-primary font-mono font-bold text-sm">2.4 MB/s</span>
-</div>
-<div class="flex flex-col">
-<span class="text-[10px] text-white/50 uppercase font-bold">Download</span>
-<span class="text-primary font-mono font-bold text-sm">14.8 MB/s</span>
-</div>
-</div>
-</div>
-</section>
-</main>
-<!-- iOS Bottom Navigation -->
-<nav class="fixed bottom-0 left-0 right-0 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-xl border-t border-slate-200 dark:border-white/10 px-6 pt-2 pb-8 flex justify-between items-center z-50">
-<div class="flex flex-col items-center gap-1 text-white/40">
-<a href="overview.html"><span class="material-symbols-outlined text-[26px]">dashboard</span></a>
-<a href="overview.html"><span class="text-[10px] font-bold">DASHBOARD</span></a>
-</div>
-<div class="flex flex-col items-center gap-1 text-primary">
-<span class="material-symbols-outlined text-[26px] fill-1">shield_with_heart</span>
-<a href="proxies.html"><span class="text-[10px] font-bold">PROXIES</span></a>
-</div>
-<div class="flex flex-col items-center gap-1 text-white/40">
-<span class="material-symbols-outlined text-[26px]">terminal</span>
-<a href="logs.html"><span class="text-[10px] font-bold">LOGS</span></a>
-</div>
-<div class="flex flex-col items-center gap-1 text-white/40">
-<a href="config.html"><span class="material-symbols-outlined text-[26px]">settings</span></a>
-<a href="config.html"><span class="text-[10px] font-bold">SETTINGS</span></a>
-</div>
-</nav>
-<!-- Floating UI Element for Status -->
-<div class="fixed bottom-24 right-4 z-40">
-<div class="size-12 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30 active:scale-90 transition-transform cursor-pointer">
-<span class="material-symbols-outlined text-background-dark font-bold">add</span>
-</div>
-</div>
-</body></html>
+    <header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">router</span>
+            <h1 class="text-xl font-bold tracking-tight">Proxies</h1>
+        </div>
+        <button id="test-latency" class="flex items-center gap-2 border border-primary/50 text-primary px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-primary/10 transition-colors">
+            <span class="material-symbols-outlined text-[18px]">speed</span>
+            <span>Test Latency</span>
+        </button>
+    </header>
+
+    <main id="proxy-groups-container" class="pb-32 pt-4">
+        <!-- Proxy groups will be injected here -->
+        <div class="px-4 py-8 text-center text-white/40 italic">
+            Loading proxies...
+        </div>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-xl border-t border-slate-200 dark:border-white/10 px-6 pt-2 pb-8 flex justify-between items-center z-50">
+        <a href="overview.html" class="flex flex-col items-center gap-1 text-white/40">
+            <span class="material-symbols-outlined text-[26px]">dashboard</span>
+            <span class="text-[10px] font-bold">DASHBOARD</span>
+        </a>
+        <a href="proxies.html" class="flex flex-col items-center gap-1 text-primary">
+            <span class="material-symbols-outlined text-[26px] fill">shield_with_heart</span>
+            <span class="text-[10px] font-bold">PROXIES</span>
+        </a>
+        <a href="logs.html" class="flex flex-col items-center gap-1 text-white/40">
+            <span class="material-symbols-outlined text-[26px]">terminal</span>
+            <span class="text-[10px] font-bold">LOGS</span>
+        </a>
+        <a href="config.html" class="flex flex-col items-center gap-1 text-white/40">
+            <span class="material-symbols-outlined text-[26px]">settings</span>
+            <span class="text-[10px] font-bold">SETTINGS</span>
+        </a>
+    </nav>
+
+    <script type="module">
+        import api from './js/api.js';
+
+        const container = document.getElementById('proxy-groups-container');
+
+        const renderProxies = async () => {
+            try {
+                const data = await api.getProxies();
+                const groups = data.providers ? Object.values(data.providers).flatMap(p => p.proxies) : Object.values(data.proxies);
+                // For simplicity, we use data.proxies as most Clash/Sing-box APIs return { proxies: { ... } }
+                const proxyData = data.proxies || {};
+
+                container.innerHTML = '';
+
+                Object.entries(proxyData).forEach(([groupName, group]) => {
+                    if (group.type !== 'Selector' && group.type !== 'URLTest' && group.type !== 'Fallback') return;
+
+                    const section = document.createElement('section');
+                    section.className = 'mb-8';
+
+                    const header = `
+                        <div class="flex items-center justify-between px-4 pb-3">
+                            <h2 class="text-lg font-bold">${groupName} <span class="text-xs font-normal opacity-50 ml-2">(${group.type})</span></h2>
+                            <span class="text-primary text-sm font-medium">${group.now || ''}</span>
+                        </div>
+                    `;
+
+                    const grid = document.createElement('div');
+                    grid.className = 'grid grid-cols-2 gap-3 px-4';
+
+                    group.all.forEach(proxyName => {
+                        const isActive = group.now === proxyName;
+                        const card = document.createElement('div');
+                        card.className = `rounded-xl p-3 flex flex-col justify-between h-24 cursor-pointer border ${isActive ? 'active-glow bg-primary/10 border-primary' : 'bg-white/5 border-white/10'}`;
+
+                        card.innerHTML = `
+                            <div class="flex justify-between items-start">
+                                <span class="text-white font-bold text-sm leading-tight truncate pr-2">${proxyName}</span>
+                                ${isActive ? '<div class="size-2 bg-primary rounded-full animate-pulse"></div>' : ''}
+                            </div>
+                        `;
+
+                        card.onclick = async () => {
+                            try {
+                                await api.selectProxy(groupName, proxyName);
+                                renderProxies(); // Re-render after selection
+                            } catch (e) {
+                                alert('Failed to select proxy: ' + e.message);
+                            }
+                        };
+
+                        grid.appendChild(card);
+                    });
+
+                    section.innerHTML = header;
+                    section.appendChild(grid);
+                    container.appendChild(section);
+                });
+            } catch (e) {
+                container.innerHTML = `<div class="p-8 text-red-500">Error: ${e.message}. Make sure Sing-box is running and External Controller is enabled.</div>`;
+            }
+        };
+
+        renderProxies();
+    </script>
+</body>
+</html>
