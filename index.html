@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SingDash</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <h1>SingDash</h1>
+      <nav>
+        <button class="nav-item active" data-section="overview">Overview</button>
+        <button class="nav-item" data-section="proxies">Proxies</button>
+        <button class="nav-item" data-section="rules">Rules</button>
+        <button class="nav-item" data-section="logs">Logs</button>
+      </nav>
+      <div class="status-pill">
+        Core: <strong id="coreStatus">Running</strong>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header>
+        <h2 id="sectionTitle">Overview</h2>
+        <button id="toggleCore" class="primary">Restart Core</button>
+      </header>
+
+      <section id="overview" class="section active">
+        <div class="cards">
+          <article class="card">
+            <h3>Download</h3>
+            <p id="downloadRate">0 KB/s</p>
+          </article>
+          <article class="card">
+            <h3>Upload</h3>
+            <p id="uploadRate">0 KB/s</p>
+          </article>
+          <article class="card">
+            <h3>Active Proxy</h3>
+            <p id="activeProxy">-</p>
+          </article>
+          <article class="card">
+            <h3>Connections</h3>
+            <p id="connections">0</p>
+          </article>
+        <article class="card">
+            <h3>Mode</h3>
+            <p id="dashboardMode">Offline Demo</p>
+          </article>
+        </div>
+        <article class="panel">
+          <h3>Traffic Monitor</h3>
+          <canvas id="trafficChart" width="800" height="220" aria-label="Traffic chart"></canvas>
+        </article>
+      </section>
+
+      <section id="proxies" class="section">
+        <article class="panel">
+          <h3>Proxy Groups</h3>
+          <ul id="proxyList" class="proxy-list"></ul>
+        </article>
+      </section>
+
+      <section id="rules" class="section">
+        <article class="panel">
+          <h3>Routing Rules</h3>
+          <ul class="rules-list" id="rulesList"></ul>
+        </article>
+      </section>
+
+      <section id="logs" class="section">
+        <article class="panel">
+          <h3>Real-time Logs (Local)</h3>
+          <pre id="logOutput"></pre>
+        </article>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
