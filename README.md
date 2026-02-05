@@ -1,13 +1,14 @@
-# SingDash (Offline Dashboard)
+# SingDash (Offline Dashboard + Live Sing-box API)
 
 Dashboard statis bergaya YACD untuk Sing-box/Clash API.
 
 ## Apakah bisa offline?
 Bisa. UI ini 100% file statis (`index.html`, `styles.css`, `app.js`) tanpa dependency CDN.
 
-Selama file tersedia di local filesystem atau diserve dari local web server, dashboard tetap bisa dibuka tanpa internet.
+- **Offline UI**: tampilan tetap bisa dibuka tanpa internet.
+- **Live data**: butuh akses ke endpoint controller Sing-box (`external_controller`).
 
-## Menjalankan lokal (offline)
+## Menjalankan lokal
 
 ### Opsi 1: langsung dari file
 Buka `index.html` di browser.
@@ -19,14 +20,19 @@ python3 -m http.server 8000
 Lalu buka `http://127.0.0.1:8000`.
 
 ## Integrasi ke sing-box (non-root)
-Untuk mode non-root, umumnya dashboard diarahkan lewat `external_ui` + `external_ui_download_url` (atau pre-bundled folder, tergantung build/app).
-
-Jika environment kamu mengizinkan path lokal:
 1. Letakkan file dashboard ini di folder, misalnya `./dashboard/singdash`.
-2. Arahkan konfigurasi sing-box agar `external_ui` mengarah ke folder tersebut.
-3. Akses panel dari alamat API sing-box (`external_controller`) sesuai konfigurasi app/manager yang kamu pakai.
+2. Arahkan konfigurasi sing-box/app manager ke folder itu sebagai external UI.
+3. Pastikan controller API aktif (contoh: `http://127.0.0.1:9090`) dan isi URL tersebut di panel **Sing-box Controller** pada dashboard.
+4. Jika pakai secret, isi field Secret di dashboard.
 
-> Catatan: nama field bisa sedikit berbeda antar wrapper/app (misalnya Android client, manager panel, atau build khusus). Intinya: arahkan **external UI** ke folder statis lokal ini.
+> Nama field config bisa berbeda antar wrapper/app. Intinya: UI statis diarahkan ke folder ini, dan dashboard mengakses Clash-compatible API dari controller.
 
-## Catatan teknis
-Saat ini metrik masih simulasi di `app.js` untuk demo UI. Agar benar-benar menampilkan data sing-box, hubungkan endpoint API Clash-compatible (contoh: `/proxies`, `/rules`, `/connections`, `/logs`) dari `external_controller`.
+## Endpoint yang dipakai dashboard
+- `GET /traffic`
+- `GET /connections`
+- `GET /proxies`
+- `PUT /proxies/{group}`
+- `GET /rules`
+- `WS /logs?level=info`
+
+Jika endpoint logs tidak tersedia, dashboard tetap jalan dengan polling metrik lain.

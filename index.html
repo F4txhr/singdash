@@ -15,18 +15,32 @@
         <button class="nav-item" data-section="rules">Rules</button>
         <button class="nav-item" data-section="logs">Logs</button>
       </nav>
-      <div class="status-pill">
-        Core: <strong id="coreStatus">Running</strong>
-      </div>
+      <div class="status-pill">Core: <strong id="coreStatus">Connecting...</strong></div>
     </aside>
 
     <main class="content">
       <header>
         <h2 id="sectionTitle">Overview</h2>
-        <button id="toggleCore" class="primary">Restart Core</button>
+        <button id="toggleCore" class="primary">Test Connection</button>
       </header>
 
       <section id="overview" class="section active">
+        <article class="panel control-panel">
+          <h3>Sing-box Controller</h3>
+          <div class="control-grid">
+            <label>
+              Base URL
+              <input id="controllerUrl" type="text" placeholder="http://127.0.0.1:9090" />
+            </label>
+            <label>
+              Secret (opsional)
+              <input id="controllerSecret" type="password" placeholder="Bearer token" />
+            </label>
+            <button id="saveConfig" class="primary">Simpan & Connect</button>
+          </div>
+          <p class="hint">Contoh: <code>http://127.0.0.1:9090</code> (pastikan endpoint Clash API aktif).</p>
+        </article>
+
         <div class="cards">
           <article class="card">
             <h3>Download</h3>
@@ -44,9 +58,9 @@
             <h3>Connections</h3>
             <p id="connections">0</p>
           </article>
-        <article class="card">
+          <article class="card">
             <h3>Mode</h3>
-            <p id="dashboardMode">Offline Demo</p>
+            <p id="dashboardMode">Waiting API</p>
           </article>
         </div>
         <article class="panel">
@@ -71,7 +85,7 @@
 
       <section id="logs" class="section">
         <article class="panel">
-          <h3>Real-time Logs (Local)</h3>
+          <h3>Real-time Logs</h3>
           <pre id="logOutput"></pre>
         </article>
       </section>
