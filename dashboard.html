@@ -144,9 +144,9 @@
         </div>
       </div>
       <div class="header-actions">
-        <button class="btn btn-secondary" onclick="showSettings()">⚙️ Settings</button>
-        <button class="btn btn-success" id="fetchBtn" onclick="fetchProxies()">📥 Fetch from GitHub</button>
-        <button class="btn btn-primary" id="testBtn" onclick="testAllProxies()">🔄 Test All</button>
+        <button class="btn btn-secondary" id="settingsBtn">⚙️ Settings</button>
+        <button class="btn btn-success" id="fetchBtn">📥 Fetch from GitHub</button>
+        <button class="btn btn-primary" id="testBtn">🔄 Test All</button>
       </div>
     </div>
 
@@ -202,10 +202,10 @@
     <!-- Tabs -->
     <div class="tabs">
       <div class="tabs-list">
-        <button class="tab active" onclick="switchTab('proxies', event)">📋 Proxies</button>
-        <button class="tab" onclick="switchTab('add', event)">➕ Add Proxy</button>
-        <button class="tab" onclick="switchTab('workers', event)">🔧 Workers</button>
-        <button class="tab" onclick="switchTab('history', event)">📊 History</button>
+        <button class="tab active" data-tab="proxies">📋 Proxies</button>
+        <button class="tab" data-tab="add">➕ Add Proxy</button>
+        <button class="tab" data-tab="workers">🔧 Workers</button>
+        <button class="tab" data-tab="history">📊 History</button>
       </div>
 
       <!-- Proxies Tab -->
@@ -337,8 +337,8 @@
         <input type="text" id="configApiUrl" placeholder="http://localhost:3001">
       </div>
       <div style="display: flex; gap: 8px; justify-content: flex-end;">
-        <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
-        <button class="btn btn-primary" onclick="saveSettings()">💾 Save</button>
+        <button class="btn btn-secondary" id="cancelSettingsBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveSettingsBtn">💾 Save</button>
       </div>
       <div class="config-box" style="margin-top: 16px;">
         <h4>ℹ️ How to get credentials:</h4>
@@ -353,6 +353,9 @@
   </div>
 
   <script>
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
     // Configuration
     let config = {
       supabaseUrl: localStorage.getItem('supabaseUrl') || '',
@@ -366,6 +369,7 @@
 
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
+      bindUIEvents();
       updateSystemInfo('Ready');
       if (!config.supabaseUrl || !config.supabaseKey) {
         showSettings();
@@ -376,6 +380,21 @@
         loadHistory();
       }
     });
+
+    function bindUIEvents() {
+      $('#settingsBtn')?.addEventListener('click', showSettings);
+      $('#fetchBtn')?.addEventListener('click', fetchProxies);
+      $('#testBtn')?.addEventListener('click', testAllProxies);
+      $('#cancelSettingsBtn')?.addEventListener('click', closeSettings);
+      $('#saveSettingsBtn')?.addEventListener('click', saveSettings);
+
+      $$('.tab[data-tab]').forEach((tabButton) => {
+        tabButton.addEventListener('click', (evt) => {
+          const targetTab = evt.currentTarget.dataset.tab;
+          switchTab(targetTab, evt);
+        });
+      });
+    }
 
     // Supabase Helper
     async function supabaseQuery(table, options = {}) {
@@ -419,21 +438,21 @@
 
     // Settings
     function showSettings() {
-      document.getElementById('configSupabaseUrl').value = config.supabaseUrl;
-      document.getElementById('configSupabaseKey').value = config.supabaseKey;
-      document.getElementById('configApiUrl').value = config.apiUrl;
-      document.getElementById('settingsModal').classList.remove('hidden');
+      $('#configSupabaseUrl').value = config.supabaseUrl;
+      $('#configSupabaseKey').value = config.supabaseKey;
+      $('#configApiUrl').value = config.apiUrl;
+      $('#settingsModal').classList.remove('hidden');
       updateSystemInfo('Config required');
     }
 
     function closeSettings() {
-      document.getElementById('settingsModal').classList.add('hidden');
+      $('#settingsModal').classList.add('hidden');
     }
 
     function saveSettings() {
-      config.supabaseUrl = document.getElementById('configSupabaseUrl').value.replace(/\/$/, '');
-      config.supabaseKey = document.getElementById('configSupabaseKey').value;
-      config.apiUrl = document.getElementById('configApiUrl').value.replace(/\/$/, '');
+      config.supabaseUrl = $('#configSupabaseUrl').value.replace(/\/$/, '');
+      config.supabaseKey = $('#configSupabaseKey').value;
+      config.apiUrl = $('#configApiUrl').value.replace(/\/$/, '');
 
       localStorage.setItem('supabaseUrl', config.supabaseUrl);
       localStorage.setItem('supabaseKey', config.supabaseKey);
@@ -446,9 +465,9 @@
     }
 
     function updateSystemInfo(statusText = 'Running') {
-      document.getElementById('systemStatus').innerHTML = `<span class="status-dot"></span>${statusText}`;
-      document.getElementById('systemApiUrl').textContent = config.apiUrl || '-';
-      document.getElementById('lastSyncTime').textContent = lastSyncAt
+      $('#systemStatus').innerHTML = `<span class="status-dot"></span>${statusText}`;
+      $('#systemApiUrl').textContent = config.apiUrl || '-';
+      $('#lastSyncTime').textContent = lastSyncAt
         ? new Date(lastSyncAt).toLocaleString()
         : 'Not synced yet';
     }
