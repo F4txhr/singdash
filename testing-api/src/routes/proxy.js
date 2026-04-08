@@ -27,7 +27,7 @@ router.post('/test', async (req, res) => {
     } = req.body;
     
     // Validate required field
-    const validation = validateRequired(req.body, ['source_url']);
+    const validation = validateRequired({ source_url }, ['source_url']);
     if (!validation.valid) {
       return error(res, 400, 'Missing required fields', validation.missing, { requestId: req.requestId });
     }
