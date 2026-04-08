@@ -1,0 +1,117 @@
+{
+  "_description": "Contoh response dari monitoring endpoints",
+  "_note": "Format uptime hanya menggunakan compact dan iso_8601",
+  
+  "ping": {
+    "endpoint": "/ping",
+    "method": "GET",
+    "response": {
+      "status": "ok",
+      "timestamp": 1711234567890,
+      "datetime": "2024-03-22T10:30:00.000Z",
+      "domain": "singdash-worker.workers.dev",
+      "server": "singdash-worker"
+    }
+  },
+  
+  "uptime": {
+    "endpoint": "/uptime",
+    "method": "GET",
+    "response": {
+      "status": "ok",
+      "uptime": {
+        "total_seconds": 95415,
+        "compact": "1d 2h 30m 15s",
+        "iso_8601": "P1DT2H30M15S"
+      },
+      "last_deploy": "2024-03-21T08:00:00.000Z",
+      "current_time": "2024-03-22T10:30:15.000Z"
+    }
+  },
+  
+  "stats": {
+    "endpoint": "/stats",
+    "method": "GET",
+    "response": {
+      "status": "ok",
+      "data": {
+        "uptime": {
+          "total_seconds": 95415,
+          "compact": "1d 2h 30m 15s",
+          "iso_8601": "P1DT2H30M15S"
+        },
+        "requests": {
+          "total": 12345,
+          "today": 5678,
+          "daily_limit": 100000,
+          "remaining": 94322,
+          "usage_percentage": "5.68"
+        },
+        "bandwidth": {
+          "total_bytes": 1234567890,
+          "total_gb": "1.150",
+          "total_mb": "1177.25"
+        },
+        "last_deploy": "2024-03-21T08:00:00.000Z",
+        "current_time": "2024-03-22T10:30:15.000Z"
+      }
+    }
+  },
+  
+  "info": {
+    "endpoint": "/info",
+    "method": "GET",
+    "response": {
+      "service": "Singdash Worker",
+      "version": "1.0.0",
+      "domain": "singdash-worker.workers.dev",
+      "service_name": "singdash-worker",
+      "uptime": {
+        "total_seconds": 95415,
+        "compact": "1d 2h 30m 15s",
+        "iso_8601": "P1DT2H30M15S"
+      },
+      "total_requests": 12345,
+      "endpoints": {
+        "ping": "/ping",
+        "uptime": "/uptime",
+        "stats": "/stats",
+        "info": "/info"
+      }
+    }
+  },
+  
+  "examples_by_uptime": {
+    "_note": "Berbagai contoh format uptime berdasarkan durasi",
+    
+    "less_than_minute": {
+      "total_seconds": 45,
+      "compact": "45s",
+      "iso_8601": "PT45S"
+    },
+    
+    "few_minutes": {
+      "total_seconds": 375,
+      "compact": "6m 15s",
+      "iso_8601": "PT6M15S"
+    },
+    
+    "few_hours": {
+      "total_seconds": 5430,
+      "compact": "1h 30m 30s",
+      "iso_8601": "PT1H30M30S"
+    },
+    
+    "one_day": {
+      "total_seconds": 93660,
+      "compact": "1d 2h 1m",
+      "iso_8601": "P1DT2H1M"
+    },
+    
+    "multiple_days": {
+      "total_seconds": 267000,
+      "compact": "3d 2h 10m",
+      "iso_8601": "P3DT2H10M"
+    }
+  }
+}

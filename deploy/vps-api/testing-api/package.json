@@ -1,0 +1,38 @@
+{
+  "name": "singdash-testing-api",
+  "version": "1.0.0",
+  "description": "Testing API for Singdash VPN Platform - Proxy testing, ISP lookup, and config generation",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest"
+  },
+  "keywords": [
+    "vpn",
+    "proxy",
+    "testing",
+    "singbox",
+    "clash",
+    "cloudflare-workers"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "axios": "^1.6.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "helmet": "^8.1.0",
+    "maxmind": "^4.3.18",
+    "node-cron": "^3.0.3",
+    "socks": "^2.7.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "supertest": "^6.3.3"
+  }
+}

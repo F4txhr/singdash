@@ -1,0 +1,27 @@
+{
+  "name": "singdash-worker",
+  "version": "1.0.0",
+  "description": "Singdash VPN Worker dengan monitoring endpoints",
+  "main": "_worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "./deploy.sh",
+    "deploy:prod": "./deploy.sh production",
+    "deploy:dev": "./deploy.sh dev",
+    "tail": "wrangler tail",
+    "kv:init": "wrangler kv:key put last_deploy $(date +%s) && wrangler kv:key put total_requests 0 && wrangler kv:key put total_bandwidth 0"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "vpn",
+    "proxy",
+    "singbox",
+    "clash"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

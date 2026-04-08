@@ -1,0 +1,25 @@
+name = "singdash-worker"
+main = "_worker.js"
+compatibility_date = "2024-01-01"
+
+# KV Namespace untuk tracking stats
+# Buat dengan command: wrangler kv:namespace create "KV"
+# Lalu copy ID yang didapat ke bawah ini
+[[kv_namespaces]]
+binding = "KV"
+id = ""  # Ganti dengan ID dari output wrangler kv:namespace create
+
+# Environment variables
+[vars]
+PRX_BANK_URL = "https://raw.githubusercontent.com/backup-heavenly-demons/gateway/refs/heads/main/kvProxyList.json"
+EMBED_ASSETS = "false"
+REVERSE_PRX_TARGET = "example.com"
+
+# Production environment (optional)
+[env.production]
+name = "singdash-worker-production"
+route = { pattern = "vpn.yourdomain.com", zone_name = "yourdomain.com" }
+
+# Development environment
+[env.dev]
+name = "singdash-worker-dev"
