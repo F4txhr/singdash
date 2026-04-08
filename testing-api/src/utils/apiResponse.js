@@ -89,7 +89,7 @@ function getErrorType(statusCode) {
 /**
  * Validate required fields
  */
-function validateRequired(fields, body) {
+function validateRequired(body, fields) {
   const missing = [];
   
   for (const field of fields) {
