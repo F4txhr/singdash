@@ -2,16 +2,18 @@
 
 ## Ringkasan
 - Struktur repo terbaca dengan baik, termasuk dashboard statis, API Node.js, dan worker Cloudflare.
-- Ada potensi noise di git karena belum ada aturan ignore untuk dependency folder lokal.
-- Suite test Jest sudah terpasang tetapi belum ada file test yang terdeteksi.
+- Aturan ignore dasar sudah tersedia untuk mencegah noise dari dependency lokal, file env, dan artefak editor.
+- Suite test `testing-api` sekarang aktif dan mencakup endpoint health, config, dan proxy.
 
 ## Pemeriksaan yang dijalankan
 1. `npm test --prefix testing-api`
-   - Hasil: gagal karena **No tests found**.
-2. `node --check worker-mods/_worker.js`
+   - Hasil: **lolos** (seluruh test suite hijau).
+2. `node --check testing-api/src/routes/proxy.js`
+   - Hasil: lolos syntax check.
+3. `node --check testing-api/src/__tests__/proxy.test.js`
    - Hasil: lolos syntax check.
 
-## Rekomendasi
-- Tambahkan test minimal untuk route health/config di `testing-api` agar CI dapat memverifikasi perilaku dasar API.
-- Pertimbangkan jalankan `jest --passWithNoTests` sementara jika pipeline harus tetap hijau sebelum test ditulis.
+## Rekomendasi Lanjutan
+- Tambahkan workflow CI (GitHub Actions) untuk menjalankan `npm test --prefix testing-api` di setiap push/PR.
+- Tambahkan negative-path test untuk kombinasi protocol/format yang tidak didukung agar error API konsisten.
 - Pertahankan `.env.example` sebagai template dan hindari menyimpan `.env` baru ke git.

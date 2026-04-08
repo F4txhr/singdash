@@ -48,4 +48,47 @@ describe('Singdash Testing API', () => {
       expect(response.body.data.metadata.format).toBe('singbox');
     });
   });
+
+  describe('GET /api/config/singbox', () => {
+    it('returns downloadable singbox config', async () => {
+      const response = await request(app)
+        .get('/api/config/singbox')
+        .query({
+          ip: '1.1.1.1',
+          port: 443,
+          worker_domain: 'example.workers.dev',
+          protocol: 'trojan'
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data).toHaveProperty('type');
+      expect(response.headers['content-disposition']).toContain('singbox-1.1.1.1.json');
+      expect(response.headers['content-type']).toContain('application/json');
+    });
+  });
+
+  describe('GET /api/config/clash', () => {
+    it('returns clash YAML response payload', async () => {
+      const response = await request(app)
+        .get('/api/config/clash')
+        .query({
+          ip: '1.1.1.1',
+          port: 443,
+          worker_domain: 'example.workers.dev',
+          protocol: 'trojan'
+        });
+
+      const payload = response.body && Object.keys(response.body).length > 0
+        ? response.body
+        : JSON.parse(response.text);
+
+      expect(response.status).toBe(200);
+      expect(payload.success).toBe(true);
+      expect(payload.data).toHaveProperty('yaml');
+      expect(payload.data.yaml).toContain('type: trojan');
+      expect(response.headers['content-disposition']).toContain('clash-1.1.1.1.yaml');
+      expect(response.headers['content-type']).toContain('text/yaml');
+    });
+  });
 });

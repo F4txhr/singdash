@@ -89,4 +89,46 @@ describe('Proxy routes', () => {
       expect(githubFetcher.fetchAndParse).toHaveBeenCalledWith('https://example.com/proxies.json');
     });
   });
+
+  describe('GET /api/proxies/:country', () => {
+    it('returns empty result when country has no proxies', async () => {
+      githubFetcher.fetchAndParse.mockResolvedValue([
+        { ip: '1.1.1.1', port: 443, country_code: 'US' }
+      ]);
+
+      const response = await request(app).get('/api/proxies/id');
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.country_code).toBe('ID');
+      expect(response.body.data.total).toBe(0);
+      expect(response.body.data.proxies).toEqual([]);
+    });
+
+    it('tests and returns proxies for selected country', async () => {
+      githubFetcher.fetchAndParse.mockResolvedValue([
+        { ip: '1.1.1.1', port: 443, country_code: 'US' },
+        { ip: '2.2.2.2', port: 80, country_code: 'US' },
+        { ip: '8.8.8.8', port: 443, country_code: 'SG' }
+      ]);
+      proxyTester.testQuick
+        .mockResolvedValueOnce({ status: 'alive', latency: 50 })
+        .mockResolvedValueOnce({ status: 'dead', latency: 9999 });
+      ispLookup.lookup
+        .mockResolvedValueOnce({ country_name: 'United States', isp: 'Cloudflare' })
+        .mockResolvedValueOnce({ country_name: 'United States', isp: 'Example ISP' });
+
+      const response = await request(app)
+        .get('/api/proxies/us')
+        .query({ limit: 2 });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.country_code).toBe('US');
+      expect(response.body.data.total).toBe(2);
+      expect(response.body.data.alive).toBe(1);
+      expect(response.body.data.proxies).toHaveLength(2);
+      expect(proxyTester.testQuick).toHaveBeenCalledTimes(2);
+    });
+  });
 });
