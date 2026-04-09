@@ -789,6 +789,9 @@
         }
 
         container.innerHTML = workers.map(w => `
+          ${(() => {
+            const hasCustomDomain = isCustomDomain(w.domain);
+            return `
           <div class="card" style="margin-bottom: 12px;">
             <div class="card-header">
               <div>
@@ -800,13 +803,18 @@
             <div class="card-info">
               <div>⏱️ Uptime: ${formatUptimeCompact(w.uptime_seconds || 0)}</div>
               <div>📨 Requests: ${Number(w.total_requests || 0).toLocaleString()}</div>
-              <div>💾 Bandwidth: ${formatBytes(w.bandwidth_bytes || 0)}</div>
+              ${hasCustomDomain
+                ? `<div>💾 Bandwidth: ${formatBytes(w.bandwidth_bytes || 0)}</div>`
+                : `<div>💾 Bandwidth: <span style="color:#6b7280">hidden (no custom domain)</span></div>`
+              }
               <div>🕒 Last Check: ${w.last_checked_at ? formatDate(w.last_checked_at) : '-'}</div>
             </div>
             <div class="card-actions">
               <button class="btn-test" onclick="refreshWorkerStats('${w.id}', '${w.domain}')">🔄 Refresh Stats</button>
             </div>
           </div>
+            `;
+          })()}
         `).join('');
 
       } catch (err) {
@@ -847,9 +855,10 @@
 
         const payload = await res.json();
         const data = payload.data || {};
+        const hasCustomDomain = isCustomDomain(domain);
         const uptimeSeconds = data.uptime?.total_seconds || 0;
         const totalRequests = data.requests?.total || 0;
-        const totalBandwidth = data.bandwidth?.total_bytes || 0;
+        const totalBandwidth = hasCustomDomain ? (data.bandwidth?.total_bytes || 0) : null;
 
         await dbQuery('workers', {
           method: 'PATCH',
@@ -933,6 +942,12 @@
       if (n < 1024 * 1024) return `${(n / 1024).toFixed(2)} KB`;
       if (n < 1024 * 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(2)} MB`;
       return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+    }
+
+    function isCustomDomain(domain) {
+      if (!domain) return false;
+      const normalized = domain.replace(/^https?:\/\//, '').toLowerCase();
+      return !normalized.endsWith('.workers.dev');
     }
 
     function formatUptimeCompact(seconds) {
