@@ -798,7 +798,13 @@
               <span class="card-status ${w.status}">${w.status}</span>
             </div>
             <div class="card-info">
-              <div>⏱️ Avg: ${w.avg_response_time_ms || 'N/A'}ms | Uptime: ${w.uptime_percentage || 'N/A'}%</div>
+              <div>⏱️ Uptime: ${formatUptimeCompact(w.uptime_seconds || 0)}</div>
+              <div>📨 Requests: ${Number(w.total_requests || 0).toLocaleString()}</div>
+              <div>💾 Bandwidth: ${formatBytes(w.bandwidth_bytes || 0)}</div>
+              <div>🕒 Last Check: ${w.last_checked_at ? formatDate(w.last_checked_at) : '-'}</div>
+            </div>
+            <div class="card-actions">
+              <button class="btn-test" onclick="refreshWorkerStats('${w.id}', '${w.domain}')">🔄 Refresh Stats</button>
             </div>
           </div>
         `).join('');
@@ -830,6 +836,48 @@
 
       } catch (err) {
         showMessage('Failed: ' + err.message, 'error');
+      }
+    }
+
+    async function refreshWorkerStats(workerId, domain) {
+      try {
+        const statsUrl = domain.startsWith('http') ? `${domain.replace(/\/$/, '')}/stats` : `https://${domain.replace(/\/$/, '')}/stats`;
+        const res = await fetch(statsUrl);
+        if (!res.ok) throw new Error(`Worker stats request failed (${res.status})`);
+
+        const payload = await res.json();
+        const data = payload.data || {};
+        const uptimeSeconds = data.uptime?.total_seconds || 0;
+        const totalRequests = data.requests?.total || 0;
+        const totalBandwidth = data.bandwidth?.total_bytes || 0;
+
+        await dbQuery('workers', {
+          method: 'PATCH',
+          body: {
+            uptime_seconds: uptimeSeconds,
+            total_requests: totalRequests,
+            bandwidth_bytes: totalBandwidth,
+            status: 'active',
+            last_checked_at: new Date().toISOString(),
+            error_message: null
+          },
+          filter: `id=eq.${workerId}`
+        });
+
+        showMessage(`✅ Stats updated for ${domain}`, 'success');
+        await loadWorkers();
+      } catch (err) {
+        await dbQuery('workers', {
+          method: 'PATCH',
+          body: {
+            status: 'down',
+            last_checked_at: new Date().toISOString(),
+            error_message: err.message
+          },
+          filter: `id=eq.${workerId}`
+        });
+        showMessage(`Worker check failed: ${err.message}`, 'error');
+        await loadWorkers();
       }
     }
 
@@ -877,6 +925,28 @@
       if (ping < 100) return '#22c55e';
       if (ping < 300) return '#eab308';
       return '#ef4444';
+    }
+
+    function formatBytes(bytes) {
+      const n = Number(bytes || 0);
+      if (n < 1024) return `${n} B`;
+      if (n < 1024 * 1024) return `${(n / 1024).toFixed(2)} KB`;
+      if (n < 1024 * 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(2)} MB`;
+      return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+    }
+
+    function formatUptimeCompact(seconds) {
+      const total = Number(seconds || 0);
+      const d = Math.floor(total / 86400);
+      const h = Math.floor((total % 86400) / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const s = total % 60;
+      const parts = [];
+      if (d) parts.push(`${d}d`);
+      if (h) parts.push(`${h}h`);
+      if (m) parts.push(`${m}m`);
+      if (s || parts.length === 0) parts.push(`${s}s`);
+      return parts.join(' ');
     }
 
     function formatTimeAgo(dateString) {
