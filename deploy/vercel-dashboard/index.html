@@ -301,6 +301,17 @@
       loadHistory();
     });
 
+    // Safe JSON parser (helps diagnose HTML responses like index.html fallback)
+    async function parseJsonResponse(res, contextLabel) {
+      const raw = await res.text();
+      try {
+        return JSON.parse(raw || 'null');
+      } catch (err) {
+        const preview = raw.slice(0, 120).replace(/\s+/g, ' ');
+        throw new Error(`${contextLabel} returned non-JSON response. Did you run with 'vercel dev'? Preview: ${preview}`);
+      }
+    }
+
     // DB Helper (Vercel API bridge)
     async function dbQuery(table, options = {}) {
       const { method = 'GET', body = null, select = '*', filter = null } = options;
@@ -319,12 +330,12 @@
       }
 
       const res = await fetch(url, fetchOptions);
+      const payload = await parseJsonResponse(res, '/api/db');
       if (!res.ok) {
-        const error = await res.text();
-        throw new Error(`DB API error: ${res.status} - ${error}`);
+        throw new Error(`DB API error: ${res.status} - ${JSON.stringify(payload)}`);
       }
 
-      return res.json();
+      return payload;
     }
 
     // API Helper
@@ -336,7 +347,7 @@
       });
 
       if (!res.ok) throw new Error(`API error: ${res.status}`);
-      return res.json();
+      return parseJsonResponse(res, `Testing API ${endpoint}`);
     }
 
     // Settings

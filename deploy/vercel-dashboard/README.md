@@ -11,6 +11,17 @@ cd deploy/vercel-dashboard
 vercel --prod
 ```
 
+## Local Development (Penting)
+
+Jalankan dashboard ini dengan:
+
+```bash
+cd deploy/vercel-dashboard
+vercel dev
+```
+
+> Jangan pakai `python -m http.server` untuk mode full-stack ini, karena endpoint `/api/db` tidak akan aktif dan browser bisa error `Unexpected token '<'`.
+
 ## Environment Variables (Wajib di Vercel Project)
 
 - `SUPABASE_URL` = `https://xxxxx.supabase.co`
