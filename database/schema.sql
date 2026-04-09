@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS proxy_cache (
 CREATE TABLE IF NOT EXISTS workers (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   domain VARCHAR(255) NOT NULL UNIQUE,
+  custom_domain VARCHAR(255),
   name VARCHAR(100),
   active BOOLEAN DEFAULT true,
   status VARCHAR(10) DEFAULT 'unknown' CHECK (status IN ('active', 'down', 'unknown')),

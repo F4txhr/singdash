@@ -233,6 +233,10 @@
               <input type="text" id="workerUrl" placeholder="https://worker-1.your-subdomain.workers.dev">
             </div>
           </div>
+          <div class="form-group">
+            <label>Custom Domain (Optional - untuk bandwidth)</label>
+            <input type="text" id="workerCustomDomain" placeholder="https://vpn.example.com">
+          </div>
           <button class="btn btn-primary" onclick="registerWorker()">➕ Register Worker</button>
         </div>
         <div id="workersList"></div>
@@ -790,13 +794,14 @@
 
         container.innerHTML = workers.map(w => `
           ${(() => {
-            const hasCustomDomain = isCustomDomain(w.domain);
+            const hasCustomDomain = Boolean(w.custom_domain);
             return `
           <div class="card" style="margin-bottom: 12px;">
             <div class="card-header">
               <div>
                 <div class="name">${w.name || w.domain || 'Unnamed Worker'}</div>
                 <div class="isp">${w.domain || '-'}</div>
+                ${w.custom_domain ? `<div class="isp">Custom: ${w.custom_domain}</div>` : ''}
               </div>
               <span class="card-status ${w.status}">${w.status}</span>
             </div>
@@ -810,7 +815,7 @@
               <div>🕒 Last Check: ${w.last_checked_at ? formatDate(w.last_checked_at) : '-'}</div>
             </div>
             <div class="card-actions">
-              <button class="btn-test" onclick="refreshWorkerStats('${w.id}', '${w.domain}')">🔄 Refresh Stats</button>
+              <button class="btn-test" onclick="refreshWorkerStats('${w.id}', '${w.domain}', '${w.custom_domain || ''}')">🔄 Refresh Stats</button>
             </div>
           </div>
             `;
@@ -825,6 +830,7 @@
     async function registerWorker() {
       const name = document.getElementById('workerName').value.trim();
       const url = document.getElementById('workerUrl').value.trim();
+      const customDomain = document.getElementById('workerCustomDomain').value.trim();
 
       if (!name || !url) {
         showMessage('Name and URL are required!', 'error');
@@ -834,12 +840,19 @@
       try {
         await dbQuery('workers', {
           method: 'POST',
-          body: [{ name, domain: url, status: 'active', active: true }]
+          body: [{
+            name,
+            domain: url,
+            custom_domain: customDomain || null,
+            status: 'active',
+            active: true
+          }]
         });
 
         showMessage('✅ Worker registered!', 'success');
         document.getElementById('workerName').value = '';
         document.getElementById('workerUrl').value = '';
+        document.getElementById('workerCustomDomain').value = '';
         await loadWorkers();
 
       } catch (err) {
@@ -847,18 +860,28 @@
       }
     }
 
-    async function refreshWorkerStats(workerId, domain) {
+    async function refreshWorkerStats(workerId, domain, customDomain = '') {
       try {
-        const statsUrl = domain.startsWith('http') ? `${domain.replace(/\/$/, '')}/stats` : `https://${domain.replace(/\/$/, '')}/stats`;
-        const res = await fetch(statsUrl);
+        const workerStatsUrl = domain.startsWith('http') ? `${domain.replace(/\/$/, '')}/stats` : `https://${domain.replace(/\/$/, '')}/stats`;
+        const res = await fetch(workerStatsUrl);
         if (!res.ok) throw new Error(`Worker stats request failed (${res.status})`);
 
         const payload = await res.json();
         const data = payload.data || {};
-        const hasCustomDomain = isCustomDomain(domain);
         const uptimeSeconds = data.uptime?.total_seconds || 0;
         const totalRequests = data.requests?.total || 0;
-        const totalBandwidth = hasCustomDomain ? (data.bandwidth?.total_bytes || 0) : null;
+        let totalBandwidth = null;
+
+        if (customDomain) {
+          const customStatsUrl = customDomain.startsWith('http')
+            ? `${customDomain.replace(/\/$/, '')}/stats`
+            : `https://${customDomain.replace(/\/$/, '')}/stats`;
+
+          const customRes = await fetch(customStatsUrl);
+          if (!customRes.ok) throw new Error(`Custom domain stats failed (${customRes.status})`);
+          const customPayload = await customRes.json();
+          totalBandwidth = customPayload?.data?.bandwidth?.total_bytes || 0;
+        }
 
         await dbQuery('workers', {
           method: 'PATCH',
@@ -942,12 +965,6 @@
       if (n < 1024 * 1024) return `${(n / 1024).toFixed(2)} KB`;
       if (n < 1024 * 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(2)} MB`;
       return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-    }
-
-    function isCustomDomain(domain) {
-      if (!domain) return false;
-      const normalized = domain.replace(/^https?:\/\//, '').toLowerCase();
-      return !normalized.endsWith('.workers.dev');
     }
 
     function formatUptimeCompact(seconds) {

@@ -41,3 +41,9 @@ vercel dev
 1. Browser memanggil endpoint internal Vercel `/api/db`.
 2. Endpoint `/api/db` yang memanggil Supabase REST (credentials disimpan di Vercel env, tidak terekspos ke browser).
 3. Untuk test proxy / generate config, browser memanggil Testing API URL (VPS Alibaba) yang diinput di settings dashboard.
+
+## Worker Registration Notes
+
+- `Worker URL` wajib (contoh `https://xxx.workers.dev`)
+- `Custom Domain` opsional (contoh `https://vpn.example.com`)
+- Bandwidth dashboard akan diambil dari endpoint `/stats` di **custom domain** jika field ini diisi.
