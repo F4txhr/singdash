@@ -873,14 +873,11 @@
         let totalBandwidth = null;
 
         if (customDomain) {
-          const customStatsUrl = customDomain.startsWith('http')
-            ? `${customDomain.replace(/\/$/, '')}/stats`
-            : `https://${customDomain.replace(/\/$/, '')}/stats`;
+          const cfRes = await fetch(`/api/cf-bandwidth?domain=${encodeURIComponent(customDomain)}&since_days=30`);
+          if (!cfRes.ok) throw new Error(`Cloudflare GraphQL stats failed (${cfRes.status})`);
 
-          const customRes = await fetch(customStatsUrl);
-          if (!customRes.ok) throw new Error(`Custom domain stats failed (${customRes.status})`);
-          const customPayload = await customRes.json();
-          totalBandwidth = customPayload?.data?.bandwidth?.total_bytes || 0;
+          const cfPayload = await cfRes.json();
+          totalBandwidth = cfPayload?.data?.bandwidth?.total_bytes || 0;
         }
 
         await dbQuery('workers', {

@@ -27,6 +27,7 @@ vercel dev
 - `SUPABASE_URL` = `https://xxxxx.supabase.co`
 - `SUPABASE_SERVICE_ROLE_KEY` = `eyJ...` (**recommended** for server-side bridge, bypass RLS)
 - `SUPABASE_ANON_KEY` = `eyJ...` (fallback kalau kamu tetap pakai RLS policy write)
+- `CF_API_TOKEN` = Cloudflare API Token (minimal permission: `Zone:Read` + `Analytics:Read`)
 
 > Jika kamu hanya set `SUPABASE_ANON_KEY`, pastikan RLS policy `INSERT/UPDATE/DELETE` untuk tabel yang dipakai dashboard sudah dibuka.
 
@@ -46,4 +47,4 @@ vercel dev
 
 - `Worker URL` wajib (contoh `https://xxx.workers.dev`)
 - `Custom Domain` opsional (contoh `https://vpn.example.com`)
-- Bandwidth dashboard akan diambil dari endpoint `/stats` di **custom domain** jika field ini diisi.
+- Bandwidth dashboard akan diambil via **Cloudflare GraphQL API** (`https://api.cloudflare.com/client/v4/graphql`) berdasarkan `Custom Domain` jika field ini diisi.
