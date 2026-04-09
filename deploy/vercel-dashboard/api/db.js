@@ -1,5 +1,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_KEY = SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY;
 
 function parseTable(req) {
   return req.query.table || req.body?.table;
@@ -34,8 +36,8 @@ async function callSupabase({ table, method, select, filter, body }) {
   const res = await fetch(url, {
     method,
     headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
       'Content-Type': 'application/json',
       Prefer: method === 'POST' || method === 'PATCH' ? 'return=representation' : ''
     },
@@ -62,10 +64,10 @@ async function callSupabase({ table, method, select, filter, body }) {
 }
 
 module.exports = async function handler(req, res) {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
     return res.status(500).json({
       success: false,
-      message: 'Missing SUPABASE_URL or SUPABASE_ANON_KEY in Vercel environment variables'
+      message: 'Missing SUPABASE_URL and one of SUPABASE_SERVICE_ROLE_KEY / SUPABASE_ANON_KEY in Vercel env'
     });
   }
 

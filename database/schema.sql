@@ -189,6 +189,19 @@ CREATE POLICY "Allow public read access" ON workers FOR SELECT USING (true);
 CREATE POLICY "Allow public read access" ON worker_uptime_history FOR SELECT USING (true);
 CREATE POLICY "Allow public read access" ON test_history FOR SELECT USING (true);
 
+-- Public write access (for dashboard automation with anon key)
+CREATE POLICY "Allow public insert proxy_cache" ON proxy_cache FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update proxy_cache" ON proxy_cache FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public delete proxy_cache" ON proxy_cache FOR DELETE USING (true);
+
+CREATE POLICY "Allow public insert workers" ON workers FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update workers" ON workers FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public delete workers" ON workers FOR DELETE USING (true);
+
+CREATE POLICY "Allow public insert test_history" ON test_history FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update test_history" ON test_history FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public delete test_history" ON test_history FOR DELETE USING (true);
+
 -- If you want to restrict writes, add auth later
 -- CREATE POLICY "Allow authenticated insert" ON proxy_cache FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 

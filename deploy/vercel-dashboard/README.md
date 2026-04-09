@@ -25,7 +25,10 @@ vercel dev
 ## Environment Variables (Wajib di Vercel Project)
 
 - `SUPABASE_URL` = `https://xxxxx.supabase.co`
-- `SUPABASE_ANON_KEY` = `eyJ...`
+- `SUPABASE_SERVICE_ROLE_KEY` = `eyJ...` (**recommended** for server-side bridge, bypass RLS)
+- `SUPABASE_ANON_KEY` = `eyJ...` (fallback kalau kamu tetap pakai RLS policy write)
+
+> Jika kamu hanya set `SUPABASE_ANON_KEY`, pastikan RLS policy `INSERT/UPDATE/DELETE` untuk tabel yang dipakai dashboard sudah dibuka.
 
 ## Environment Variables (Opsional / UI Settings)
 
