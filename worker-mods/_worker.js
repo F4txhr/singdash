@@ -437,12 +437,139 @@ async function handlePing(env, url) {
 }
 
 /**
+ * Get official bandwidth (data transfer) from Cloudflare GraphQL API.
+ * Uses KV cache for 10 minutes to avoid rate limits.
+ */
+async function getOfficialBandwidth(env, url) {
+  const cacheKey = 'cached_official_bandwidth';
+  const cacheTtlMs = 10 * 60 * 1000;
+
+  try {
+    const cached = await env.KV.get(cacheKey, { type: 'json' });
+    const now = Date.now();
+
+    if (cached && cached.cached_at && (now - cached.cached_at) < cacheTtlMs && cached.bandwidth) {
+      return {
+        ...cached.bandwidth,
+        cache: {
+          hit: true,
+          cached_at: new Date(cached.cached_at).toISOString(),
+          ttl_seconds: Math.floor((cacheTtlMs - (now - cached.cached_at)) / 1000)
+        }
+      };
+    }
+
+    const hostname = url?.hostname || '';
+    if (hostname.endsWith('workers.dev')) {
+      return {
+        total_bytes: null,
+        total_mb: null,
+        total_gb: null,
+        source: 'unavailable',
+        reason: 'Custom domain not configured',
+        cache: { hit: false, cached_at: null, ttl_seconds: 0 }
+      };
+    }
+
+    if (!env.ZONE_ID || !env.CF_API_TOKEN) {
+      return {
+        total_bytes: null,
+        total_mb: null,
+        total_gb: null,
+        source: 'unavailable',
+        reason: 'Missing ZONE_ID or CF_API_TOKEN',
+        cache: { hit: false, cached_at: null, ttl_seconds: 0 }
+      };
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const query = `
+      query GetZoneBandwidth($zoneTag: string, $filter: ZoneHttpRequests1dGroupsFilter_InputObject) {
+        viewer {
+          zones(filter: { zoneTag: $zoneTag }) {
+            httpRequests1dGroups(limit: 1000, filter: $filter) {
+              sum {
+                bytes
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const response = await fetch('https://api.cloudflare.com/client/v4/graphql', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.CF_API_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query,
+        variables: {
+          zoneTag: env.ZONE_ID,
+          filter: {
+            date_geq: since,
+            date_leq: today
+          }
+        }
+      })
+    });
+
+    const payload = await response.json();
+    if (!response.ok || payload?.errors?.length) {
+      throw new Error(payload?.errors?.[0]?.message || `GraphQL request failed (${response.status})`);
+    }
+
+    const groups = payload?.data?.viewer?.zones?.[0]?.httpRequests1dGroups || [];
+    const totalBytes = groups.reduce((sum, row) => sum + (row?.sum?.bytes || 0), 0);
+
+    const officialBandwidth = {
+      total_bytes: totalBytes,
+      total_mb: (totalBytes / (1024 * 1024)).toFixed(2),
+      total_gb: (totalBytes / (1024 * 1024 * 1024)).toFixed(3),
+      source: 'cloudflare_graphql',
+      period: {
+        date_geq: since,
+        date_leq: today,
+        days: groups.length
+      }
+    };
+
+    await env.KV.put(cacheKey, JSON.stringify({
+      cached_at: now,
+      bandwidth: officialBandwidth
+    }));
+
+    return {
+      ...officialBandwidth,
+      cache: {
+        hit: false,
+        cached_at: new Date(now).toISOString(),
+        ttl_seconds: Math.floor(cacheTtlMs / 1000)
+      }
+    };
+  } catch (error) {
+    console.error('Error getting official bandwidth:', error);
+    return {
+      total_bytes: null,
+      total_mb: null,
+      total_gb: null,
+      source: 'error',
+      reason: error.message,
+      cache: { hit: false, cached_at: null, ttl_seconds: 0 }
+    };
+  }
+}
+
+/**
  * Handle /stats endpoint
  * Returns detailed statistics
  */
-async function handleStats(env) {
+async function handleStats(env, url) {
   try {
     const stats = await getStatsFromKV(env);
+    const officialBandwidth = await getOfficialBandwidth(env, url);
     
     if (!stats) {
       return new Response(JSON.stringify({
@@ -488,7 +615,13 @@ async function handleStats(env) {
         bandwidth: {
           total_bytes: stats.total_bandwidth,
           total_gb: bandwidthGB,
-          total_mb: bandwidthMB
+          total_mb: bandwidthMB,
+          source: 'kv_estimate'
+        },
+        official_bandwidth: officialBandwidth,
+        service: {
+          name: 'Singdash Worker',
+          domain: url.hostname
         },
         last_deploy: stats.last_deploy ? new Date(stats.last_deploy).toISOString() : null,
         current_time: new Date().toISOString()
@@ -589,7 +722,7 @@ export default {
       
       // /stats - Detailed statistics
       if (path === '/stats' && method === 'GET') {
-        return handleStats(env);
+        return handleStats(env, url);
       }
       
       // /info - Basic worker info

@@ -1,919 +1,367 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Singdash VPN Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Singdash VPN Dashboard (React)</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-    .container { max-width: 1400px; margin: 0 auto; }
-    .header { background: white; border-radius: 12px; padding: 24px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 16px; }
-    .logo { display: flex; align-items: center; gap: 12px; }
-    .logo span:first-child { font-size: 32px; }
-    .logo h1 { font-size: 24px; color: #1a1a2e; }
-    .logo p { font-size: 14px; color: #666; }
-    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-    .btn-primary { background: #4f46e5; color: white; }
-    .btn-primary:hover { background: #4338ca; }
-    .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
-    .btn-success { background: #22c55e; color: white; }
-    .btn-success:hover { background: #16a34a; }
-    .btn-warning { background: #eab308; color: white; }
-    .btn-danger { background: #ef4444; color: white; }
-    .btn-secondary { background: #f3f4f6; color: #374151; }
-    .btn-secondary:hover { background: #e5e7eb; }
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
-    .stat-card { background: white; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .stat-card .icon { font-size: 32px; }
-    .stat-card .info .label { font-size: 14px; color: #666; }
-    .stat-card .info .value { font-size: 28px; font-weight: bold; }
-    .stat-card.green .value { color: #22c55e; }
-    .stat-card.yellow .value { color: #eab308; }
-    .stat-card.red .value { color: #ef4444; }
-    .stat-card.blue .value { color: #3b82f6; }
-    .tabs { background: white; border-radius: 12px; padding: 16px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .tabs-list { display: flex; gap: 8px; border-bottom: 2px solid #f3f4f6; padding-bottom: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-    .tab { padding: 8px 16px; border: none; background: none; font-size: 14px; font-weight: 600; color: #6b7280; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -14px; }
-    .tab.active { color: #4f46e5; border-bottom-color: #4f46e5; }
-    .tab:hover { color: #4f46e5; }
-    .panel { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .panel-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px; }
-    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
-    .form-group textarea { font-family: monospace; min-height: 100px; }
-    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; }
-    .config-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-top: 16px; }
-    .config-box h4 { font-size: 14px; margin-bottom: 8px; color: #374151; }
-    .config-box code { display: block; background: #1f2937; color: #e5e7eb; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; }
-    .loading { text-align: center; padding: 40px; }
-    .loading .spinner { font-size: 32px; animation: spin 1s linear infinite; }
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .empty { text-align: center; padding: 60px; color: #666; }
-    .empty .icon { font-size: 64px; margin-bottom: 16px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
-    .card:hover { transform: translateY(-2px); }
-    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .card-country { display: flex; align-items: center; gap: 12px; }
-    .card-country .flag { font-size: 28px; }
-    .card-country .name { font-size: 16px; font-weight: 600; }
-    .card-country .isp { font-size: 12px; color: #666; }
-    .card-status { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-    .card-status.alive { background: #dcfce7; color: #22c55e; }
-    .card-status.slow { background: #fef9c3; color: #eab308; }
-    .card-status.dead { background: #fee2e2; color: #ef4444; }
-    .card-status.untested { background: #f3f4f6; color: #6b7280; }
-    .card-info { margin-bottom: 12px; }
-    .card-info div { font-size: 14px; color: #374151; margin-bottom: 4px; }
-    .card-actions { display: flex; gap: 8px; }
-    .card-actions button { flex: 1; padding: 8px; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; }
-    .btn-test { background: #f3f4f6; color: #374151; }
-    .btn-test:hover { background: #e5e7eb; }
-    .btn-generate { background: #4f46e5; color: white; }
-    .btn-generate:hover { background: #4338ca; }
-    .btn-delete { background: #fee2e2; color: #ef4444; }
-    .btn-delete:hover { background: #fecaca; }
-    .error { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; margin-bottom: 16px; color: #dc2626; }
-    .success { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px; margin-bottom: 16px; color: #16a34a; }
-    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; background: #e0e7ff; color: #4f46e5; }
-    .hidden { display: none !important; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
-    th { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; }
-    td { font-size: 14px; }
-    tr:hover { background: #f9fafb; }
+    :root {
+      --bg: #f4f7ff;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #4f46e5;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .app { max-width: 1240px; margin: 0 auto; padding: 24px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
+    }
+    .header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px; margin-bottom: 16px; }
+    .title h1 { margin: 0; font-size: 24px; }
+    .title p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      color: white;
+    }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); }
+    .btn-success { background: var(--success); }
+    .btn-muted { background: #334155; }
+    .btn-danger { background: var(--danger); }
+    .grid { display: grid; gap: 12px; }
+    .grid-4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .stat { padding: 14px; }
+    .stat .label { color: var(--muted); font-size: 12px; }
+    .stat .value { font-size: 26px; font-weight: 800; margin-top: 6px; }
+    .toolbar, .panel { padding: 16px; margin-top: 14px; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    .toolbar input { max-width: 360px; }
+    .proxy-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); margin-top: 14px; }
+    .proxy-item { padding: 14px; }
+    .proxy-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; }
+    .badge { padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .alive { color: #166534; background: #dcfce7; }
+    .slow { color: #854d0e; background: #fef9c3; }
+    .dead { color: #991b1b; background: #fee2e2; }
+    .untested { color: #334155; background: #e2e8f0; }
+    .proxy-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .proxy-actions button { flex: 1; }
+    .message { margin: 12px 0; padding: 10px 12px; border-radius: 10px; font-weight: 600; }
+    .message.success { background: #dcfce7; color: #166534; }
+    .message.error { background: #fee2e2; color: #991b1b; }
+    .message.warning { background: #fef9c3; color: #854d0e; }
+    .modal {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, .5);
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-content { width: min(560px, 100%); padding: 18px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .muted { color: var(--muted); font-size: 12px; }
+    @media (max-width: 720px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .header { flex-direction: column; align-items: start; }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <div class="logo">
-        <span>🌐</span>
-        <div>
-          <h1>Singdash VPN</h1>
-          <p>Proxy Management Dashboard</p>
-        </div>
-      </div>
-      <div class="header-actions">
-        <button class="btn btn-secondary" onclick="showSettings()">⚙️ Settings</button>
-        <button class="btn btn-success" id="fetchBtn" onclick="fetchProxies()">📥 Fetch from GitHub</button>
-        <button class="btn btn-primary" id="testBtn" onclick="testAllProxies()">🔄 Test All</button>
-      </div>
-    </div>
+  <div id="root"></div>
 
-    <!-- Error/Success Messages -->
-    <div id="messageBox"></div>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Stats -->
-    <div id="stats" class="stats" style="display: none;">
-      <div class="stat-card blue">
-        <span class="icon">📊</span>
-        <div class="info">
-          <div class="label">Total Proxies</div>
-          <div class="value" id="totalCount">0</div>
-        </div>
-      </div>
-      <div class="stat-card green">
-        <span class="icon">✅</span>
-        <div class="info">
-          <div class="label">Alive</div>
-          <div class="value" id="aliveCount">0</div>
-        </div>
-      </div>
-      <div class="stat-card yellow">
-        <span class="icon">⚠️</span>
-        <div class="info">
-          <div class="label">Slow</div>
-          <div class="value" id="slowCount">0</div>
-        </div>
-      </div>
-      <div class="stat-card red">
-        <span class="icon">❌</span>
-        <div class="info">
-          <div class="label">Dead</div>
-          <div class="value" id="deadCount">0</div>
-        </div>
-      </div>
-    </div>
+  <script type="text/babel">
+    const { useEffect, useMemo, useState } = React;
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <div class="tabs-list">
-        <button class="tab active" onclick="switchTab('proxies')">📋 Proxies</button>
-        <button class="tab" onclick="switchTab('add')">➕ Add Proxy</button>
-        <button class="tab" onclick="switchTab('workers')">🔧 Workers</button>
-        <button class="tab" onclick="switchTab('history')">📊 History</button>
-      </div>
+    const statusClass = (status) => ({
+      alive: 'alive',
+      slow: 'slow',
+      dead: 'dead',
+      untested: 'untested'
+    }[status || 'untested']);
 
-      <!-- Proxies Tab -->
-      <div id="tab-proxies" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
-          <div>
-            <input type="text" id="searchProxy" placeholder="🔍 Search IP, country, provider..." style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; width: 300px;" oninput="filterProxies()">
-          </div>
-          <div style="display: flex; gap: 8px;">
-            <select id="filterStatus" onchange="filterProxies()" style="padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
-              <option value="">All Status</option>
-              <option value="alive">Alive</option>
-              <option value="slow">Slow</option>
-              <option value="dead">Dead</option>
-              <option value="untested">Untested</option>
-            </select>
-            <button class="btn btn-danger" onclick="deleteDeadProxies()">🗑️ Delete Dead</button>
-          </div>
-        </div>
-        <div id="proxyGrid" class="grid"></div>
-        <div id="proxyEmpty" class="empty hidden">
-          <div class="icon">📭</div>
-          <h3>No Proxies Yet</h3>
-          <p>Click "Fetch from GitHub" to get started or add manually</p>
-        </div>
-      </div>
-
-      <!-- Add Proxy Tab -->
-      <div id="tab-add" class="tab-content hidden">
-        <div class="panel">
-          <div class="panel-title">➕ Add Single Proxy</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>IP Address</label>
-              <input type="text" id="addIp" placeholder="8.8.8.8">
-            </div>
-            <div class="form-group">
-              <label>Port</label>
-              <input type="number" id="addPort" placeholder="80" min="1" max="65535">
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Country Code</label>
-              <input type="text" id="addCountry" placeholder="US" maxlength="2">
-            </div>
-            <div class="form-group">
-              <label>Provider</label>
-              <input type="text" id="addProvider" placeholder="Google">
-            </div>
-          </div>
-          <button class="btn btn-primary" onclick="addProxy()">💾 Save & Test</button>
-        </div>
-
-        <div class="panel">
-          <div class="panel-title">📥 Bulk Import</div>
-          <div class="form-group">
-            <label>GitHub Raw URL</label>
-            <input type="text" id="githubUrl" value="https://raw.githubusercontent.com/FoolVPN-ID/Nautica/main/proxyList.txt" placeholder="https://raw.githubusercontent.com/...">
-          </div>
-          <div class="form-group">
-            <label>Or paste proxies directly (IP:Port or CSV format)</label>
-            <textarea id="bulkInput" placeholder="8.8.8.8:80
-1.1.1.1:443
-# or CSV:
-# 8.8.8.8,80,US,Google
-# 1.1.1.1,443,AU,Cloudflare"></textarea>
-          </div>
-          <button class="btn btn-success" onclick="bulkImport()">📥 Import</button>
-        </div>
-      </div>
-
-      <!-- Workers Tab -->
-      <div id="tab-workers" class="tab-content hidden">
-        <div class="panel">
-          <div class="panel-title">🔧 Register Cloudflare Worker</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Worker Name</label>
-              <input type="text" id="workerName" placeholder="worker-1">
-            </div>
-            <div class="form-group">
-              <label>Worker URL</label>
-              <input type="text" id="workerUrl" placeholder="https://worker-1.your-subdomain.workers.dev">
-            </div>
-          </div>
-          <button class="btn btn-primary" onclick="registerWorker()">➕ Register Worker</button>
-        </div>
-        <div id="workersList"></div>
-      </div>
-
-      <!-- History Tab -->
-      <div id="tab-history" class="tab-content hidden">
-        <div class="panel">
-          <div class="panel-title">📊 Test History</div>
-          <table id="historyTable">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Tested</th>
-                <th>Alive</th>
-                <th>Slow</th>
-                <th>Dead</th>
-                <th>Avg Ping</th>
-              </tr>
-            </thead>
-            <tbody id="historyBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Settings Modal -->
-  <div id="settingsModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
-    <div class="panel" style="width: 500px; max-width: 90vw;">
-      <div class="panel-title">⚙️ Configuration</div>
-      <div class="form-group">
-        <label>Supabase URL</label>
-        <input type="text" id="configSupabaseUrl" placeholder="https://xxxxx.supabase.co">
-      </div>
-      <div class="form-group">
-        <label>Supabase Anon Key</label>
-        <input type="text" id="configSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
-      </div>
-      <div class="form-group">
-        <label>Testing API URL</label>
-        <input type="text" id="configApiUrl" placeholder="http://localhost:3001">
-      </div>
-      <div style="display: flex; gap: 8px; justify-content: flex-end;">
-        <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
-        <button class="btn btn-primary" onclick="saveSettings()">💾 Save</button>
-      </div>
-      <div class="config-box" style="margin-top: 16px;">
-        <h4>ℹ️ How to get credentials:</h4>
-        <p style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">
-          1. Go to <a href="https://supabase.com" target="_blank">supabase.com</a><br>
-          2. Open your project → Settings → API<br>
-          3. Copy URL and anon/public key<br>
-          4. Testing API is your VPS IP: http://YOUR-IP:3001
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // Configuration
-    let config = {
-      supabaseUrl: localStorage.getItem('supabaseUrl') || '',
-      supabaseKey: localStorage.getItem('supabaseKey') || '',
-      apiUrl: localStorage.getItem('apiUrl') || 'http://localhost:3001'
+    const getFlag = (cc = 'XX') => {
+      if (!cc || cc.length !== 2) return '🌍';
+      return String.fromCodePoint(...cc.toUpperCase().split('').map(c => 127397 + c.charCodeAt()));
     };
 
-    let proxies = [];
-    let workers = [];
+    function App() {
+      const [config, setConfig] = useState({
+        supabaseUrl: localStorage.getItem('supabaseUrl') || '',
+        supabaseKey: localStorage.getItem('supabaseKey') || '',
+        apiUrl: localStorage.getItem('apiUrl') || 'http://localhost:3001'
+      });
+      const [showSettings, setShowSettings] = useState(!localStorage.getItem('supabaseUrl') || !localStorage.getItem('supabaseKey'));
+      const [message, setMessage] = useState(null);
+      const [loading, setLoading] = useState({ fetch: false, test: false });
+      const [proxies, setProxies] = useState([]);
+      const [search, setSearch] = useState('');
+      const [filterStatus, setFilterStatus] = useState('');
+      const [githubUrl, setGithubUrl] = useState('https://raw.githubusercontent.com/FoolVPN-ID/Nautica/main/proxyList.txt');
+      const [lastSync, setLastSync] = useState(null);
 
-    // Initialize
-    window.addEventListener('DOMContentLoaded', () => {
-      if (!config.supabaseUrl || !config.supabaseKey) {
-        showSettings();
-        showMessage('Please configure Supabase credentials first', 'warning');
-      } else {
-        loadProxies();
-        loadWorkers();
-        loadHistory();
-      }
-    });
+      const notify = (text, type = 'warning') => {
+        setMessage({ text, type });
+        setTimeout(() => setMessage(null), 4500);
+      };
 
-    // Supabase Helper
-    async function supabaseQuery(table, options = {}) {
-      const { method = 'GET', body = null, select = '*', filter = null } = options;
+      const supabaseQuery = async (table, options = {}) => {
+        const { method = 'GET', body = null, select = '*', filter = null } = options;
+        let url = `${config.supabaseUrl}/rest/v1/${table}?select=${select}`;
+        if (filter) url += `&${filter}`;
 
-      let url = `${config.supabaseUrl}/rest/v1/${table}?select=${select}`;
-      if (filter) url += `&${filter}`;
+        const res = await fetch(url, {
+          method,
+          headers: {
+            apikey: config.supabaseKey,
+            Authorization: `Bearer ${config.supabaseKey}`,
+            'Content-Type': 'application/json',
+            Prefer: method === 'POST' || method === 'PATCH' ? 'return=representation' : ''
+          },
+          body: body ? JSON.stringify(body) : null
+        });
 
-      const fetchOptions = {
-        method,
-        headers: {
-          'apikey': config.supabaseKey,
-          'Authorization': `Bearer ${config.supabaseKey}`,
-          'Content-Type': 'application/json',
-          'Prefer': method === 'POST' || method === 'PATCH' ? 'return=representation' : ''
+        if (!res.ok) {
+          const errTxt = await res.text();
+          throw new Error(`Supabase ${res.status}: ${errTxt}`);
+        }
+        return res.json();
+      };
+
+      const apiCall = async (endpoint, options = {}) => {
+        const res = await fetch(`${config.apiUrl}${endpoint}`, {
+          method: options.method || 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: options.body ? JSON.stringify(options.body) : null
+        });
+        if (!res.ok) throw new Error(`API ${res.status}`);
+        return res.json();
+      };
+
+      const loadProxies = async () => {
+        if (!config.supabaseUrl || !config.supabaseKey) return;
+        try {
+          const data = await supabaseQuery('proxy_cache', { select: '*', filter: 'order=created_at.desc&limit=500' });
+          setProxies(data || []);
+          setLastSync(new Date().toISOString());
+        } catch (err) {
+          notify(`Gagal load proxies: ${err.message}`, 'error');
         }
       };
 
-      if (body) fetchOptions.body = JSON.stringify(body);
+      useEffect(() => {
+        loadProxies();
+      }, [config.supabaseUrl, config.supabaseKey]);
 
-      const res = await fetch(url, fetchOptions);
-      if (!res.ok) {
-        const error = await res.text();
-        throw new Error(`Supabase error: ${res.status} - ${error}`);
-      }
-
-      return res.json();
-    }
-
-    // API Helper
-    async function apiCall(endpoint, options = {}) {
-      const res = await fetch(`${config.apiUrl}${endpoint}`, {
-        method: options.method || 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: options.body ? JSON.stringify(options.body) : null
-      });
-
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-      return res.json();
-    }
-
-    // Settings
-    function showSettings() {
-      document.getElementById('configSupabaseUrl').value = config.supabaseUrl;
-      document.getElementById('configSupabaseKey').value = config.supabaseKey;
-      document.getElementById('configApiUrl').value = config.apiUrl;
-      document.getElementById('settingsModal').classList.remove('hidden');
-    }
-
-    function closeSettings() {
-      document.getElementById('settingsModal').classList.add('hidden');
-    }
-
-    function saveSettings() {
-      config.supabaseUrl = document.getElementById('configSupabaseUrl').value.replace(/\/$/, '');
-      config.supabaseKey = document.getElementById('configSupabaseKey').value;
-      config.apiUrl = document.getElementById('configApiUrl').value.replace(/\/$/, '');
-
-      localStorage.setItem('supabaseUrl', config.supabaseUrl);
-      localStorage.setItem('supabaseKey', config.supabaseKey);
-      localStorage.setItem('apiUrl', config.apiUrl);
-
-      closeSettings();
-      showMessage('Settings saved!', 'success');
-      loadProxies();
-    }
-
-    // Message
-    function showMessage(text, type = 'error') {
-      const box = document.getElementById('messageBox');
-      box.innerHTML = `<div class="${type}">${type === 'error' ? '❌' : type === 'success' ? '✅' : '⚠️'} ${text}</div>`;
-      setTimeout(() => box.innerHTML = '', 5000);
-    }
-
-    // Tabs
-    function switchTab(tabName) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
-      event.target.classList.add('active');
-
-      if (tabName === 'proxies') loadProxies();
-      if (tabName === 'workers') loadWorkers();
-      if (tabName === 'history') loadHistory();
-    }
-
-    // Load Proxies from Supabase
-    async function loadProxies() {
-      try {
-        proxies = await supabaseQuery('proxy_cache', {
-          select: '*',
-          filter: 'order=created_at.desc&limit=500'
-        });
-
-        updateStats();
-        renderProxies();
-      } catch (err) {
-        console.error('Failed to load proxies:', err);
-      }
-    }
-
-    // Update Stats
-    function updateStats() {
-      const stats = {
+      const stats = useMemo(() => ({
         total: proxies.length,
         alive: proxies.filter(p => p.status === 'alive').length,
         slow: proxies.filter(p => p.status === 'slow').length,
         dead: proxies.filter(p => p.status === 'dead').length
+      }), [proxies]);
+
+      const filteredProxies = useMemo(() => proxies.filter((p) => {
+        const q = search.toLowerCase();
+        const searchMatch = !q || p.ip?.toLowerCase().includes(q) || (p.country_code || '').toLowerCase().includes(q) || (p.provider || '').toLowerCase().includes(q);
+        const statusMatch = !filterStatus || (p.status || 'untested') === filterStatus;
+        return searchMatch && statusMatch;
+      }), [proxies, search, filterStatus]);
+
+      const parseProxyList = (text) => {
+        return text.split('\n')
+          .map(line => line.trim())
+          .filter(line => line && !line.startsWith('#'))
+          .map((line) => {
+            if (line.includes(',')) {
+              const [ip, port, country = 'XX', provider = 'Unknown'] = line.split(',').map((v) => v.trim());
+              return { ip, port: parseInt(port, 10), country_code: country.toUpperCase(), provider };
+            }
+            if (line.includes(':')) {
+              const [ip, port] = line.split(':').map((v) => v.trim());
+              return { ip, port: parseInt(port, 10), country_code: 'XX', provider: 'Unknown' };
+            }
+            return null;
+          })
+          .filter(Boolean)
+          .filter(item => item.ip && Number.isFinite(item.port));
       };
 
-      document.getElementById('stats').style.display = 'grid';
-      document.getElementById('totalCount').textContent = stats.total;
-      document.getElementById('aliveCount').textContent = stats.alive;
-      document.getElementById('slowCount').textContent = stats.slow;
-      document.getElementById('deadCount').textContent = stats.dead;
-    }
+      const handleFetchProxies = async () => {
+        if (!config.supabaseUrl || !config.supabaseKey) return notify('Isi settings Supabase dulu', 'warning');
+        setLoading(s => ({ ...s, fetch: true }));
+        try {
+          const res = await fetch(githubUrl);
+          if (!res.ok) throw new Error('Source URL tidak bisa diambil');
+          const text = await res.text();
+          const parsed = parseProxyList(text);
+          if (!parsed.length) throw new Error('Tidak ada proxy valid di source');
 
-    // Render Proxies
-    function renderProxies() {
-      const filtered = getFilteredProxies();
-      const grid = document.getElementById('proxyGrid');
-      const empty = document.getElementById('proxyEmpty');
+          await supabaseQuery('proxy_cache', {
+            method: 'POST',
+            body: parsed.map(p => ({ ...p, status: 'untested', last_tested_at: null }))
+          });
 
-      if (filtered.length === 0) {
-        grid.innerHTML = '';
-        empty.classList.remove('hidden');
-        return;
-      }
+          notify(`Berhasil import ${parsed.length} proxy`, 'success');
+          await loadProxies();
+        } catch (err) {
+          notify(err.message, 'error');
+        } finally {
+          setLoading(s => ({ ...s, fetch: false }));
+        }
+      };
 
-      empty.classList.add('hidden');
-      grid.innerHTML = filtered.map((p, i) => `
-        <div class="card">
-          <div class="card-header">
-            <div class="card-country">
-              <span class="flag">${getFlag(p.country_code)}</span>
-              <div>
-                <div class="name">${p.country_code || 'Unknown'}</div>
-                <div class="isp">${p.provider || 'Unknown'}</div>
+      const handleTestAll = async () => {
+        if (!proxies.length) return notify('Belum ada proxy untuk dites', 'warning');
+        setLoading(s => ({ ...s, test: true }));
+        try {
+          notify('Testing proxies berjalan...', 'warning');
+          await apiCall('/api/v1/proxies/test-batch', { body: { proxies } });
+          notify('Testing selesai. Refresh data...', 'success');
+          await loadProxies();
+        } catch (err) {
+          notify(`Testing gagal: ${err.message}`, 'error');
+        } finally {
+          setLoading(s => ({ ...s, test: false }));
+        }
+      };
+
+      const saveSettings = (evt) => {
+        evt.preventDefault();
+        localStorage.setItem('supabaseUrl', config.supabaseUrl.replace(/\/$/, ''));
+        localStorage.setItem('supabaseKey', config.supabaseKey);
+        localStorage.setItem('apiUrl', config.apiUrl.replace(/\/$/, ''));
+        setConfig(c => ({
+          ...c,
+          supabaseUrl: c.supabaseUrl.replace(/\/$/, ''),
+          apiUrl: c.apiUrl.replace(/\/$/, '')
+        }));
+        setShowSettings(false);
+        notify('Settings tersimpan', 'success');
+      };
+
+      return (
+        <div className="app">
+          <div className="card header">
+            <div className="title">
+              <h1>🌐 Singdash VPN Dashboard (React)</h1>
+              <p>Versi modern dengan React state management untuk operasional harian.</p>
+            </div>
+            <div className="actions">
+              <button className="btn btn-muted" onClick={() => setShowSettings(true)}>⚙️ Settings</button>
+              <button className="btn btn-success" onClick={handleFetchProxies} disabled={loading.fetch}>{loading.fetch ? 'Importing...' : '📥 Fetch'}</button>
+              <button className="btn btn-primary" onClick={handleTestAll} disabled={loading.test}>{loading.test ? 'Testing...' : '🔄 Test All'}</button>
+            </div>
+          </div>
+
+          {message && <div className={`message ${message.type}`}>{message.text}</div>}
+
+          <div className="grid grid-4">
+            <div className="card stat"><div className="label">Total Proxies</div><div className="value">{stats.total}</div></div>
+            <div className="card stat"><div className="label">Alive</div><div className="value" style={{ color: '#16a34a' }}>{stats.alive}</div></div>
+            <div className="card stat"><div className="label">Slow</div><div className="value" style={{ color: '#d97706' }}>{stats.slow}</div></div>
+            <div className="card stat"><div className="label">Dead</div><div className="value" style={{ color: '#dc2626' }}>{stats.dead}</div></div>
+          </div>
+
+          <div className="card panel">
+            <div className="muted">API: {config.apiUrl || '-'} • Last sync: {lastSync ? new Date(lastSync).toLocaleString() : 'Belum sync'}</div>
+            <div className="toolbar">
+              <input placeholder="Cari IP / country / provider" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                  <option value="">All status</option>
+                  <option value="alive">Alive</option>
+                  <option value="slow">Slow</option>
+                  <option value="dead">Dead</option>
+                  <option value="untested">Untested</option>
+                </select>
+                <input value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} title="GitHub Raw URL" />
               </div>
             </div>
-            <span class="card-status ${p.status || 'untested'}">${getStatusIcon(p.status)} ${p.status || 'untested'}</span>
+
+            {!filteredProxies.length ? (
+              <div className="muted" style={{ marginTop: 12 }}>Belum ada data proxy. Klik tombol Fetch untuk import.</div>
+            ) : (
+              <div className="proxy-grid">
+                {filteredProxies.map((p, idx) => (
+                  <div key={`${p.ip}-${p.port}-${idx}`} className="card proxy-item">
+                    <div className="proxy-top">
+                      <div>
+                        <div style={{ fontWeight: 700 }}>{getFlag(p.country_code)} {p.country_code || 'XX'}</div>
+                        <div className="muted">{p.provider || 'Unknown provider'}</div>
+                      </div>
+                      <span className={`badge ${statusClass(p.status)}`}>{p.status || 'untested'}</span>
+                    </div>
+                    <div><code>{p.ip}:{p.port}</code></div>
+                    {p.response_time_ms ? <div className="muted">Ping: {p.response_time_ms} ms</div> : null}
+                    <div className="proxy-actions">
+                      <button className="btn btn-muted" onClick={() => notify('Gunakan endpoint API untuk test single (next iteration)', 'warning')}>Test</button>
+                      <button className="btn btn-primary" onClick={() => notify('Generate config akan dihubungkan ke endpoint config', 'warning')}>Config</button>
+                      <button className="btn btn-danger" onClick={() => notify('Delete proxy via Supabase akan ditambahkan di iterasi berikutnya', 'warning')}>Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          <div class="card-info">
-            <div>📍 <code>${p.ip}:${p.port}</code></div>
-            ${p.response_time_ms ? `<div>⏱️ <span style="color: ${getPingColor(p.response_time_ms)}">${p.response_time_ms}ms</span></div>` : ''}
-            ${p.last_tested_at ? `<div style="font-size: 11px; color: #9ca3af;">🕒 ${formatTimeAgo(p.last_tested_at)}</div>` : ''}
-          </div>
-          <div class="card-actions">
-            <button class="btn-test" onclick="testSingle(${proxies.indexOf(p)})">🔄 Test</button>
-            <button class="btn-generate" onclick="generateConfig(${proxies.indexOf(p)})" ${(p.status || 'untested') !== 'alive' ? 'disabled' : ''}>📥 Config</button>
-            <button class="btn-delete" onclick="deleteProxy(${proxies.indexOf(p)})">🗑️</button>
-          </div>
+
+          {showSettings && (
+            <div className="modal" onClick={() => setShowSettings(false)}>
+              <div className="card modal-content" onClick={(e) => e.stopPropagation()}>
+                <h3 style={{ marginTop: 0 }}>⚙️ Settings</h3>
+                <form onSubmit={saveSettings}>
+                  <div className="form-grid">
+                    <div>
+                      <label>Supabase URL</label>
+                      <input value={config.supabaseUrl} onChange={(e) => setConfig(c => ({ ...c, supabaseUrl: e.target.value }))} required />
+                    </div>
+                    <div>
+                      <label>Supabase Key</label>
+                      <input value={config.supabaseKey} onChange={(e) => setConfig(c => ({ ...c, supabaseKey: e.target.value }))} required />
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 10 }}>
+                    <label>Testing API URL</label>
+                    <input value={config.apiUrl} onChange={(e) => setConfig(c => ({ ...c, apiUrl: e.target.value }))} />
+                  </div>
+                  <div style={{ marginTop: 14, display: 'flex', justifyContent: 'end', gap: 8 }}>
+                    <button type="button" className="btn btn-muted" onClick={() => setShowSettings(false)}>Cancel</button>
+                    <button type="submit" className="btn btn-primary">Save</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
-      `).join('');
+      );
     }
 
-    function getFilteredProxies() {
-      const search = document.getElementById('searchProxy')?.value.toLowerCase() || '';
-      const status = document.getElementById('filterStatus')?.value || '';
-
-      return proxies.filter(p => {
-        const matchSearch = !search ||
-          p.ip.toLowerCase().includes(search) ||
-          (p.country_code || '').toLowerCase().includes(search) ||
-          (p.provider || '').toLowerCase().includes(search);
-
-        const matchStatus = !status || (p.status || 'untested') === status;
-
-        return matchSearch && matchStatus;
-      });
-    }
-
-    function filterProxies() {
-      renderProxies();
-    }
-
-    // Fetch from GitHub
-    async function fetchProxies() {
-      const url = document.getElementById('githubUrl')?.value || 'https://raw.githubusercontent.com/FoolVPN-ID/Nautica/main/proxyList.txt';
-
-      setLoading('fetchBtn', true);
-      try {
-        // Fetch raw data
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Failed to fetch from GitHub');
-
-        const text = await res.text();
-        const parsed = parseProxyList(text);
-
-        if (parsed.length === 0) throw new Error('No proxies found in source');
-
-        // Save to Supabase
-        const toInsert = parsed.map(p => ({
-          ip: p.ip,
-          port: p.port,
-          country_code: p.country_code || 'XX',
-          provider: p.provider || 'Unknown',
-          status: 'untested',
-          last_tested_at: null
-        }));
-
-        await supabaseQuery('proxy_cache', {
-          method: 'POST',
-          body: toInsert
-        });
-
-        showMessage(`✅ Imported ${parsed.length} proxies! Now click "Test All" to check connectivity.`, 'success');
-        await loadProxies();
-
-      } catch (err) {
-        showMessage(err.message, 'error');
-      } finally {
-        setLoading('fetchBtn', false);
-      }
-    }
-
-    // Parse Proxy List
-    function parseProxyList(text) {
-      const proxies = [];
-      const lines = text.split('\n');
-
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith('#')) continue;
-
-        // CSV format: IP,Port,CountryCode,Provider
-        if (trimmed.includes(',')) {
-          const parts = trimmed.split(',');
-          if (parts.length >= 3) {
-            proxies.push({
-              ip: parts[0].trim(),
-              port: parseInt(parts[1].trim()),
-              country_code: (parts[2].trim() || 'XX').toUpperCase(),
-              provider: parts[3]?.trim() || 'Unknown'
-            });
-          }
-        }
-        // IP:Port format
-        else if (trimmed.includes(':')) {
-          const parts = trimmed.split(':');
-          proxies.push({
-            ip: parts[0].trim(),
-            port: parseInt(parts[1].trim()),
-            country_code: 'XX',
-            provider: 'Unknown'
-          });
-        }
-      }
-
-      return proxies;
-    }
-
-    // Test All Proxies via API
-    async function testAllProxies() {
-      const toTest = proxies.filter(p => p.ip && p.port);
-
-      if (toTest.length === 0) {
-        showMessage('No proxies to test. Import some first!', 'warning');
-        return;
-      }
-
-      setLoading('testBtn', true);
-      showMessage(`Testing ${toTest.length} proxies...`, 'warning');
-
-      try {
-        const results = [];
-
-        // Test in batches of 50
-        for (let i = 0; i < toTest.length; i += 50) {
-          const batch = toTest.slice(i, i + 50);
-
-          const res = await apiCall('/api/v1/proxies/test-batch', {
-            body: { proxies: batch }
-          });
-
-          if (res.results) {
-            // Update each proxy in Supabase
-            for (const result of res.results) {
-              await supabaseQuery('proxy_cache', {
-                method: 'PATCH',
-                body: {
-                  status: result.status,
-                  response_time_ms: result.response_time_ms,
-                  last_tested_at: new Date().toISOString()
-                },
-                filter: `ip=eq.${result.ip}&port=eq.${result.port}`
-              });
-            }
-          }
-        }
-
-        showMessage('✅ All proxies tested!', 'success');
-        await loadProxies();
-
-      } catch (err) {
-        showMessage('Test failed: ' + err.message, 'error');
-      } finally {
-        setLoading('testBtn', false);
-      }
-    }
-
-    // Test Single Proxy
-    async function testSingle(index) {
-      const proxy = proxies[index];
-      try {
-        const res = await apiCall(`/api/v1/proxies/test-single?ip=${proxy.ip}&port=${proxy.port}`);
-
-        await supabaseQuery('proxy_cache', {
-          method: 'PATCH',
-          body: {
-            status: res.result.status,
-            response_time_ms: res.result.response_time_ms,
-            last_tested_at: new Date().toISOString()
-          },
-          filter: `ip=eq.${proxy.ip}&port=eq.${proxy.port}`
-        });
-
-        showMessage('✅ Proxy tested!', 'success');
-        await loadProxies();
-
-      } catch (err) {
-        showMessage('Test failed: ' + err.message, 'error');
-      }
-    }
-
-    // Add Single Proxy
-    async function addProxy() {
-      const ip = document.getElementById('addIp').value.trim();
-      const port = parseInt(document.getElementById('addPort').value);
-      const country = document.getElementById('addCountry').value.trim().toUpperCase() || 'XX';
-      const provider = document.getElementById('addProvider').value.trim() || 'Manual';
-
-      if (!ip || !port) {
-        showMessage('IP and Port are required!', 'error');
-        return;
-      }
-
-      try {
-        await supabaseQuery('proxy_cache', {
-          method: 'POST',
-          body: [{
-            ip, port, country_code: country, provider,
-            status: 'untested',
-            last_tested_at: null
-          }]
-        });
-
-        showMessage('✅ Proxy added! Click "Test" to check connectivity.', 'success');
-        document.getElementById('addIp').value = '';
-        document.getElementById('addPort').value = '';
-        document.getElementById('addCountry').value = '';
-        document.getElementById('addProvider').value = '';
-
-        await loadProxies();
-
-      } catch (err) {
-        showMessage('Failed to add: ' + err.message, 'error');
-      }
-    }
-
-    // Bulk Import
-    async function bulkImport() {
-      const text = document.getElementById('bulkInput').value;
-      if (!text.trim()) {
-        showMessage('Please enter proxies!', 'error');
-        return;
-      }
-
-      const parsed = parseProxyList(text);
-      if (parsed.length === 0) {
-        showMessage('No valid proxies found. Format: IP:Port or CSV', 'error');
-        return;
-      }
-
-      try {
-        const toInsert = parsed.map(p => ({
-          ip: p.ip,
-          port: p.port,
-          country_code: p.country_code,
-          provider: p.provider,
-          status: 'untested',
-          last_tested_at: null
-        }));
-
-        await supabaseQuery('proxy_cache', {
-          method: 'POST',
-          body: toInsert
-        });
-
-        showMessage(`✅ Imported ${parsed.length} proxies!`, 'success');
-        document.getElementById('bulkInput').value = '';
-        await loadProxies();
-
-      } catch (err) {
-        showMessage('Import failed: ' + err.message, 'error');
-      }
-    }
-
-    // Delete Proxy
-    async function deleteProxy(index) {
-      if (!confirm('Delete this proxy?')) return;
-
-      const proxy = proxies[index];
-      try {
-        await supabaseQuery('proxy_cache', {
-          method: 'DELETE',
-          filter: `ip=eq.${proxy.ip}&port=eq.${proxy.port}`
-        });
-
-        showMessage('Proxy deleted', 'success');
-        await loadProxies();
-
-      } catch (err) {
-        showMessage('Delete failed: ' + err.message, 'error');
-      }
-    }
-
-    // Delete Dead Proxies
-    async function deleteDeadProxies() {
-      if (!confirm('Delete all dead proxies?')) return;
-
-      try {
-        await supabaseQuery('proxy_cache', {
-          method: 'DELETE',
-          filter: 'status=eq.dead'
-        });
-
-        showMessage('Dead proxies deleted', 'success');
-        await loadProxies();
-
-      } catch (err) {
-        showMessage('Delete failed: ' + err.message, 'error');
-      }
-    }
-
-    // Generate Config
-    async function generateConfig(index) {
-      const proxy = proxies[index];
-
-      try {
-        const res = await apiCall('/api/v1/config/generate', {
-          body: {
-            type: 'singbox',
-            proxies: [{
-              ip: proxy.ip,
-              port: proxy.port,
-              country_code: proxy.country_code
-            }]
-          }
-        });
-
-        if (res.config) {
-          const blob = new Blob([res.config], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `singbox-${proxy.ip}-${proxy.port}.json`;
-          a.click();
-          URL.revokeObjectURL(url);
-          showMessage('✅ Config downloaded!', 'success');
-        }
-
-      } catch (err) {
-        showMessage('Failed to generate: ' + err.message, 'error');
-      }
-    }
-
-    // Workers
-    async function loadWorkers() {
-      try {
-        workers = await supabaseQuery('workers', {
-          select: '*',
-          filter: 'order=created_at.desc'
-        });
-
-        const container = document.getElementById('workersList');
-        if (workers.length === 0) {
-          container.innerHTML = '<div class="empty"><div class="icon">🔧</div><h3>No Workers Registered</h3></div>';
-          return;
-        }
-
-        container.innerHTML = workers.map(w => `
-          <div class="card" style="margin-bottom: 12px;">
-            <div class="card-header">
-              <div>
-                <div class="name">${w.name}</div>
-                <div class="isp">${w.url}</div>
-              </div>
-              <span class="card-status ${w.status}">${w.status}</span>
-            </div>
-            <div class="card-info">
-              <div>⏱️ Avg: ${w.avg_response_time_ms || 'N/A'}ms | Uptime: ${w.uptime_percentage || 'N/A'}%</div>
-            </div>
-          </div>
-        `).join('');
-
-      } catch (err) {
-        console.error('Failed to load workers:', err);
-      }
-    }
-
-    async function registerWorker() {
-      const name = document.getElementById('workerName').value.trim();
-      const url = document.getElementById('workerUrl').value.trim();
-
-      if (!name || !url) {
-        showMessage('Name and URL are required!', 'error');
-        return;
-      }
-
-      try {
-        await supabaseQuery('workers', {
-          method: 'POST',
-          body: [{ name, url, status: 'active' }]
-        });
-
-        showMessage('✅ Worker registered!', 'success');
-        document.getElementById('workerName').value = '';
-        document.getElementById('workerUrl').value = '';
-        await loadWorkers();
-
-      } catch (err) {
-        showMessage('Failed: ' + err.message, 'error');
-      }
-    }
-
-    // History
-    async function loadHistory() {
-      try {
-        const history = await supabaseQuery('test_history', {
-          select: '*',
-          filter: 'order=tested_at.desc&limit=50'
-        });
-
-        const tbody = document.getElementById('historyBody');
-        tbody.innerHTML = history.map(h => `
-          <tr>
-            <td>${formatDate(h.tested_at)}</td>
-            <td><span class="badge">${h.test_type || 'manual'}</span></td>
-            <td>${h.proxies_tested || '-'}</td>
-            <td style="color: #22c55e;">${h.proxies_alive || '-'}</td>
-            <td style="color: #eab308;">${h.proxies_slow || '-'}</td>
-            <td style="color: #ef4444;">${h.proxies_dead || '-'}</td>
-            <td>${h.avg_response_time_ms ? h.avg_response_time_ms + 'ms' : '-'}</td>
-          </tr>
-        `).join('');
-
-      } catch (err) {
-        console.error('Failed to load history:', err);
-      }
-    }
-
-    // Helpers
-    function getFlag(countryCode) {
-      if (!countryCode || countryCode === 'XX') return '🌍';
-      return String.fromCodePoint(...countryCode.toUpperCase().split('').map(c => 127397 + c.charCodeAt(0)));
-    }
-
-    function getStatusIcon(status) {
-      if (status === 'alive') return '✅';
-      if (status === 'slow') return '⚠️';
-      if (status === 'dead') return '❌';
-      return '⏳';
-    }
-
-    function getPingColor(ping) {
-      if (!ping) return '#6b7280';
-      if (ping < 100) return '#22c55e';
-      if (ping < 300) return '#eab308';
-      return '#ef4444';
-    }
-
-    function formatTimeAgo(dateString) {
-      if (!dateString) return 'Never tested';
-      const now = new Date();
-      const date = new Date(dateString);
-      const seconds = Math.floor((now - date) / 1000);
-      if (seconds < 60) return 'Just now';
-      if (seconds < 3600) return Math.floor(seconds / 60) + ' min ago';
-      if (seconds < 86400) return Math.floor(seconds / 3600) + ' hours ago';
-      return Math.floor(seconds / 86400) + ' days ago';
-    }
-
-    function formatDate(dateString) {
-      if (!dateString) return '-';
-      return new Date(dateString).toLocaleString();
-    }
-
-    function setLoading(btnId, loading) {
-      const btn = document.getElementById(btnId);
-      if (loading) {
-        btn.disabled = true;
-        btn.dataset.originalText = btn.innerHTML;
-        btn.innerHTML = '⏳ Loading...';
-      } else {
-        btn.disabled = false;
-        btn.innerHTML = btn.dataset.originalText || btn.innerHTML;
-      }
-    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>

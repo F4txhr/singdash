@@ -233,6 +233,10 @@
               <input type="text" id="workerUrl" placeholder="https://worker-1.your-subdomain.workers.dev">
             </div>
           </div>
+          <div class="form-group">
+            <label>Custom Domain (Optional - untuk bandwidth)</label>
+            <input type="text" id="workerCustomDomain" placeholder="https://vpn.example.com">
+          </div>
           <button class="btn btn-primary" onclick="registerWorker()">➕ Register Worker</button>
         </div>
         <div id="workersList"></div>
@@ -266,14 +270,6 @@
     <div class="panel" style="width: 500px; max-width: 90vw;">
       <div class="panel-title">⚙️ Configuration</div>
       <div class="form-group">
-        <label>Supabase URL</label>
-        <input type="text" id="configSupabaseUrl" placeholder="https://xxxxx.supabase.co">
-      </div>
-      <div class="form-group">
-        <label>Supabase Anon Key</label>
-        <input type="text" id="configSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
-      </div>
-      <div class="form-group">
         <label>Testing API URL</label>
         <input type="text" id="configApiUrl" placeholder="http://localhost:3001">
       </div>
@@ -282,12 +278,11 @@
         <button class="btn btn-primary" onclick="saveSettings()">💾 Save</button>
       </div>
       <div class="config-box" style="margin-top: 16px;">
-        <h4>ℹ️ How to get credentials:</h4>
+        <h4>ℹ️ Full-stack mode:</h4>
         <p style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">
-          1. Go to <a href="https://supabase.com" target="_blank">supabase.com</a><br>
-          2. Open your project → Settings → API<br>
-          3. Copy URL and anon/public key<br>
-          4. Testing API is your VPS IP: http://YOUR-IP:3001
+          Supabase credentials disimpan aman di Vercel Environment Variables (server-side).<br>
+          Di dashboard kamu hanya perlu isi endpoint Testing API (VPS Alibaba).<br>
+          Contoh: <code>https://api-domain-kamu:3001</code>
         </p>
       </div>
     </div>
@@ -296,8 +291,6 @@
   <script>
     // Configuration
     let config = {
-      supabaseUrl: localStorage.getItem('supabaseUrl') || '',
-      supabaseKey: localStorage.getItem('supabaseKey') || '',
       apiUrl: localStorage.getItem('apiUrl') || 'http://localhost:3001'
     };
 
@@ -306,42 +299,47 @@
 
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
-      if (!config.supabaseUrl || !config.supabaseKey) {
-        showSettings();
-        showMessage('Please configure Supabase credentials first', 'warning');
-      } else {
-        loadProxies();
-        loadWorkers();
-        loadHistory();
-      }
+      showSettings();
+      loadProxies();
+      loadWorkers();
+      loadHistory();
     });
 
-    // Supabase Helper
-    async function supabaseQuery(table, options = {}) {
+    // Safe JSON parser (helps diagnose HTML responses like index.html fallback)
+    async function parseJsonResponse(res, contextLabel) {
+      const raw = await res.text();
+      try {
+        return JSON.parse(raw || 'null');
+      } catch (err) {
+        const preview = raw.slice(0, 120).replace(/\s+/g, ' ');
+        throw new Error(`${contextLabel} returned non-JSON response. Did you run with 'vercel dev'? Preview: ${preview}`);
+      }
+    }
+
+    // DB Helper (Vercel API bridge)
+    async function dbQuery(table, options = {}) {
       const { method = 'GET', body = null, select = '*', filter = null } = options;
 
-      let url = `${config.supabaseUrl}/rest/v1/${table}?select=${select}`;
-      if (filter) url += `&${filter}`;
+      const url = `/api/db?table=${encodeURIComponent(table)}&select=${encodeURIComponent(select)}${filter ? `&filter=${encodeURIComponent(filter)}` : ''}`;
 
       const fetchOptions = {
         method,
         headers: {
-          'apikey': config.supabaseKey,
-          'Authorization': `Bearer ${config.supabaseKey}`,
-          'Content-Type': 'application/json',
-          'Prefer': method === 'POST' || method === 'PATCH' ? 'return=representation' : ''
+          'Content-Type': 'application/json'
         }
       };
 
-      if (body) fetchOptions.body = JSON.stringify(body);
-
-      const res = await fetch(url, fetchOptions);
-      if (!res.ok) {
-        const error = await res.text();
-        throw new Error(`Supabase error: ${res.status} - ${error}`);
+      if (body || method === 'PATCH' || method === 'DELETE') {
+        fetchOptions.body = JSON.stringify({ table, body, filter, select });
       }
 
-      return res.json();
+      const res = await fetch(url, fetchOptions);
+      const payload = await parseJsonResponse(res, '/api/db');
+      if (!res.ok) {
+        throw new Error(`DB API error: ${res.status} - ${JSON.stringify(payload)}`);
+      }
+
+      return payload;
     }
 
     // API Helper
@@ -353,13 +351,11 @@
       });
 
       if (!res.ok) throw new Error(`API error: ${res.status}`);
-      return res.json();
+      return parseJsonResponse(res, `Testing API ${endpoint}`);
     }
 
     // Settings
     function showSettings() {
-      document.getElementById('configSupabaseUrl').value = config.supabaseUrl;
-      document.getElementById('configSupabaseKey').value = config.supabaseKey;
       document.getElementById('configApiUrl').value = config.apiUrl;
       document.getElementById('settingsModal').classList.remove('hidden');
     }
@@ -369,12 +365,7 @@
     }
 
     function saveSettings() {
-      config.supabaseUrl = document.getElementById('configSupabaseUrl').value.replace(/\/$/, '');
-      config.supabaseKey = document.getElementById('configSupabaseKey').value;
       config.apiUrl = document.getElementById('configApiUrl').value.replace(/\/$/, '');
-
-      localStorage.setItem('supabaseUrl', config.supabaseUrl);
-      localStorage.setItem('supabaseKey', config.supabaseKey);
       localStorage.setItem('apiUrl', config.apiUrl);
 
       closeSettings();
@@ -404,7 +395,7 @@
     // Load Proxies from Supabase
     async function loadProxies() {
       try {
-        proxies = await supabaseQuery('proxy_cache', {
+        proxies = await dbQuery('proxy_cache', {
           select: '*',
           filter: 'order=created_at.desc&limit=500'
         });
@@ -452,15 +443,15 @@
               <span class="flag">${getFlag(p.country_code)}</span>
               <div>
                 <div class="name">${p.country_code || 'Unknown'}</div>
-                <div class="isp">${p.provider || 'Unknown'}</div>
+                <div class="isp">${p.isp || p.provider || 'Unknown'}</div>
               </div>
             </div>
             <span class="card-status ${p.status || 'untested'}">${getStatusIcon(p.status)} ${p.status || 'untested'}</span>
           </div>
           <div class="card-info">
             <div>📍 <code>${p.ip}:${p.port}</code></div>
-            ${p.response_time_ms ? `<div>⏱️ <span style="color: ${getPingColor(p.response_time_ms)}">${p.response_time_ms}ms</span></div>` : ''}
-            ${p.last_tested_at ? `<div style="font-size: 11px; color: #9ca3af;">🕒 ${formatTimeAgo(p.last_tested_at)}</div>` : ''}
+            ${p.ping_ms ? `<div>⏱️ <span style="color: ${getPingColor(p.ping_ms)}">${p.ping_ms}ms</span></div>` : ''}
+            ${p.tested_at ? `<div style="font-size: 11px; color: #9ca3af;">🕒 ${formatTimeAgo(p.tested_at)}</div>` : ''}
           </div>
           <div class="card-actions">
             <button class="btn-test" onclick="testSingle(${proxies.indexOf(p)})">🔄 Test</button>
@@ -479,7 +470,7 @@
         const matchSearch = !search ||
           p.ip.toLowerCase().includes(search) ||
           (p.country_code || '').toLowerCase().includes(search) ||
-          (p.provider || '').toLowerCase().includes(search);
+          ((p.isp || p.provider || '')).toLowerCase().includes(search);
 
         const matchStatus = !status || (p.status || 'untested') === status;
 
@@ -511,12 +502,11 @@
           ip: p.ip,
           port: p.port,
           country_code: p.country_code || 'XX',
-          provider: p.provider || 'Unknown',
-          status: 'untested',
-          last_tested_at: null
+          isp: p.provider || 'Unknown',
+          status: null
         }));
 
-        await supabaseQuery('proxy_cache', {
+        await dbQuery('proxy_cache', {
           method: 'POST',
           body: toInsert
         });
@@ -580,30 +570,25 @@
       showMessage(`Testing ${toTest.length} proxies...`, 'warning');
 
       try {
-        const results = [];
-
-        // Test in batches of 50
-        for (let i = 0; i < toTest.length; i += 50) {
-          const batch = toTest.slice(i, i + 50);
-
-          const res = await apiCall('/api/v1/proxies/test-batch', {
-            body: { proxies: batch }
+        // Sequential to keep API load safe on small VPS
+        for (const proxy of toTest) {
+          const res = await apiCall('/api/proxies/test-single', {
+            body: { ip: proxy.ip, port: proxy.port, protocol: 'quick' }
           });
 
-          if (res.results) {
-            // Update each proxy in Supabase
-            for (const result of res.results) {
-              await supabaseQuery('proxy_cache', {
-                method: 'PATCH',
-                body: {
-                  status: result.status,
-                  response_time_ms: result.response_time_ms,
-                  last_tested_at: new Date().toISOString()
-                },
-                filter: `ip=eq.${result.ip}&port=eq.${result.port}`
-              });
-            }
-          }
+          const data = res.data || res.result || {};
+          await dbQuery('proxy_cache', {
+            method: 'PATCH',
+            body: {
+              status: data.status,
+              ping_ms: data.response_time_ms || data.latency || null,
+              tested_at: new Date().toISOString(),
+              isp: data.isp || proxy.isp || null,
+              country_code: data.country_code || proxy.country_code || 'XX',
+              country_name: data.country_name || proxy.country_name || null
+            },
+            filter: `ip=eq.${proxy.ip}&port=eq.${proxy.port}`
+          });
         }
 
         showMessage('✅ All proxies tested!', 'success');
@@ -620,14 +605,20 @@
     async function testSingle(index) {
       const proxy = proxies[index];
       try {
-        const res = await apiCall(`/api/v1/proxies/test-single?ip=${proxy.ip}&port=${proxy.port}`);
+        const res = await apiCall('/api/proxies/test-single', {
+          body: { ip: proxy.ip, port: proxy.port, protocol: 'quick' }
+        });
+        const data = res.data || res.result || {};
 
-        await supabaseQuery('proxy_cache', {
+        await dbQuery('proxy_cache', {
           method: 'PATCH',
           body: {
-            status: res.result.status,
-            response_time_ms: res.result.response_time_ms,
-            last_tested_at: new Date().toISOString()
+            status: data.status,
+            ping_ms: data.response_time_ms || data.latency || null,
+            tested_at: new Date().toISOString(),
+            isp: data.isp || proxy.isp || null,
+            country_code: data.country_code || proxy.country_code || 'XX',
+            country_name: data.country_name || proxy.country_name || null
           },
           filter: `ip=eq.${proxy.ip}&port=eq.${proxy.port}`
         });
@@ -653,12 +644,14 @@
       }
 
       try {
-        await supabaseQuery('proxy_cache', {
+        await dbQuery('proxy_cache', {
           method: 'POST',
           body: [{
-            ip, port, country_code: country, provider,
-            status: 'untested',
-            last_tested_at: null
+            ip,
+            port,
+            country_code: country,
+            isp: provider,
+            status: null
           }]
         });
 
@@ -694,12 +687,11 @@
           ip: p.ip,
           port: p.port,
           country_code: p.country_code,
-          provider: p.provider,
-          status: 'untested',
-          last_tested_at: null
+          isp: p.provider,
+          status: null
         }));
 
-        await supabaseQuery('proxy_cache', {
+        await dbQuery('proxy_cache', {
           method: 'POST',
           body: toInsert
         });
@@ -719,7 +711,7 @@
 
       const proxy = proxies[index];
       try {
-        await supabaseQuery('proxy_cache', {
+        await dbQuery('proxy_cache', {
           method: 'DELETE',
           filter: `ip=eq.${proxy.ip}&port=eq.${proxy.port}`
         });
@@ -737,7 +729,7 @@
       if (!confirm('Delete all dead proxies?')) return;
 
       try {
-        await supabaseQuery('proxy_cache', {
+        await dbQuery('proxy_cache', {
           method: 'DELETE',
           filter: 'status=eq.dead'
         });
@@ -755,19 +747,23 @@
       const proxy = proxies[index];
 
       try {
-        const res = await apiCall('/api/v1/config/generate', {
+        const workerDomain = prompt('Masukkan worker domain (contoh: worker.example.workers.dev)');
+        if (!workerDomain) return;
+
+        const res = await apiCall('/api/config/generate', {
           body: {
-            type: 'singbox',
-            proxies: [{
-              ip: proxy.ip,
-              port: proxy.port,
-              country_code: proxy.country_code
-            }]
+            ip: proxy.ip,
+            port: proxy.port,
+            country_code: proxy.country_code,
+            isp: proxy.isp || 'Unknown',
+            protocol: 'trojan',
+            format: 'singbox',
+            worker_domain: workerDomain
           }
         });
 
-        if (res.config) {
-          const blob = new Blob([res.config], { type: 'application/json' });
+        if (res.data?.config) {
+          const blob = new Blob([JSON.stringify(res.data.config, null, 2)], { type: 'application/json' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
@@ -785,7 +781,7 @@
     // Workers
     async function loadWorkers() {
       try {
-        workers = await supabaseQuery('workers', {
+        workers = await dbQuery('workers', {
           select: '*',
           filter: 'order=created_at.desc'
         });
@@ -797,18 +793,33 @@
         }
 
         container.innerHTML = workers.map(w => `
+          ${(() => {
+            const hasCustomDomain = Boolean(w.custom_domain);
+            return `
           <div class="card" style="margin-bottom: 12px;">
             <div class="card-header">
               <div>
-                <div class="name">${w.name}</div>
-                <div class="isp">${w.url}</div>
+                <div class="name">${w.name || w.domain || 'Unnamed Worker'}</div>
+                <div class="isp">${w.domain || '-'}</div>
+                ${w.custom_domain ? `<div class="isp">Custom: ${w.custom_domain}</div>` : ''}
               </div>
               <span class="card-status ${w.status}">${w.status}</span>
             </div>
             <div class="card-info">
-              <div>⏱️ Avg: ${w.avg_response_time_ms || 'N/A'}ms | Uptime: ${w.uptime_percentage || 'N/A'}%</div>
+              <div>⏱️ Uptime: ${formatUptimeCompact(w.uptime_seconds || 0)}</div>
+              <div>📨 Requests: ${Number(w.total_requests || 0).toLocaleString()}</div>
+              ${hasCustomDomain
+                ? `<div>💾 Bandwidth: ${formatBytes(w.bandwidth_bytes || 0)}</div>`
+                : `<div>💾 Bandwidth: <span style="color:#6b7280">hidden (no custom domain)</span></div>`
+              }
+              <div>🕒 Last Check: ${w.last_checked_at ? formatDate(w.last_checked_at) : '-'}</div>
+            </div>
+            <div class="card-actions">
+              <button class="btn-test" onclick="refreshWorkerStats('${w.id}', '${w.domain}', '${w.custom_domain || ''}')">🔄 Refresh Stats</button>
             </div>
           </div>
+            `;
+          })()}
         `).join('');
 
       } catch (err) {
@@ -819,6 +830,7 @@
     async function registerWorker() {
       const name = document.getElementById('workerName').value.trim();
       const url = document.getElementById('workerUrl').value.trim();
+      const customDomain = document.getElementById('workerCustomDomain').value.trim();
 
       if (!name || !url) {
         showMessage('Name and URL are required!', 'error');
@@ -826,14 +838,21 @@
       }
 
       try {
-        await supabaseQuery('workers', {
+        await dbQuery('workers', {
           method: 'POST',
-          body: [{ name, url, status: 'active' }]
+          body: [{
+            name,
+            domain: url,
+            custom_domain: customDomain || null,
+            status: 'active',
+            active: true
+          }]
         });
 
         showMessage('✅ Worker registered!', 'success');
         document.getElementById('workerName').value = '';
         document.getElementById('workerUrl').value = '';
+        document.getElementById('workerCustomDomain').value = '';
         await loadWorkers();
 
       } catch (err) {
@@ -841,24 +860,74 @@
       }
     }
 
+    async function refreshWorkerStats(workerId, domain, customDomain = '') {
+      try {
+        const workerStatsUrl = domain.startsWith('http') ? `${domain.replace(/\/$/, '')}/stats` : `https://${domain.replace(/\/$/, '')}/stats`;
+        const res = await fetch(workerStatsUrl);
+        if (!res.ok) throw new Error(`Worker stats request failed (${res.status})`);
+
+        const payload = await res.json();
+        const data = payload.data || {};
+        const uptimeSeconds = data.uptime?.total_seconds || 0;
+        const totalRequests = data.requests?.total || 0;
+        let totalBandwidth = null;
+
+        if (customDomain) {
+          const cfRes = await fetch(`/api/cf-bandwidth?domain=${encodeURIComponent(customDomain)}&since_days=30`);
+          if (!cfRes.ok) throw new Error(`Cloudflare GraphQL stats failed (${cfRes.status})`);
+
+          const cfPayload = await cfRes.json();
+          totalBandwidth = cfPayload?.data?.bandwidth?.total_bytes || 0;
+        }
+
+        await dbQuery('workers', {
+          method: 'PATCH',
+          body: {
+            uptime_seconds: uptimeSeconds,
+            total_requests: totalRequests,
+            bandwidth_bytes: totalBandwidth,
+            status: 'active',
+            last_checked_at: new Date().toISOString(),
+            error_message: null
+          },
+          filter: `id=eq.${workerId}`
+        });
+
+        showMessage(`✅ Stats updated for ${domain}`, 'success');
+        await loadWorkers();
+      } catch (err) {
+        await dbQuery('workers', {
+          method: 'PATCH',
+          body: {
+            status: 'down',
+            last_checked_at: new Date().toISOString(),
+            error_message: err.message
+          },
+          filter: `id=eq.${workerId}`
+        });
+        showMessage(`Worker check failed: ${err.message}`, 'error');
+        await loadWorkers();
+      }
+    }
+
     // History
     async function loadHistory() {
       try {
-        const history = await supabaseQuery('test_history', {
+        const history = await dbQuery('test_history', {
           select: '*',
-          filter: 'order=tested_at.desc&limit=50'
+          filter: 'order=started_at.desc&limit=50'
         });
 
         const tbody = document.getElementById('historyBody');
         tbody.innerHTML = history.map(h => `
           <tr>
-            <td>${formatDate(h.tested_at)}</td>
-            <td><span class="badge">${h.test_type || 'manual'}</span></td>
-            <td>${h.proxies_tested || '-'}</td>
-            <td style="color: #22c55e;">${h.proxies_alive || '-'}</td>
-            <td style="color: #eab308;">${h.proxies_slow || '-'}</td>
-            <td style="color: #ef4444;">${h.proxies_dead || '-'}</td>
-            <td>${h.avg_response_time_ms ? h.avg_response_time_ms + 'ms' : '-'}</td>
+            <td>${formatDate(h.started_at)}</td>
+            <td><span class="badge">${h.status || 'manual'}</span></td>
+            <td>${h.total_tested || '-'}</td>
+            <td style="color: #22c55e;">${h.total_alive || '-'}</td>
+            <td style="color: #eab308;">${h.total_slow || '-'}</td>
+            <td style="color: #ef4444;">${h.total_dead || '-'}</td>
+            <td>${h.duration_ms ? h.duration_ms + 'ms' : '-'}</td>
           </tr>
         `).join('');
 
@@ -885,6 +954,28 @@
       if (ping < 100) return '#22c55e';
       if (ping < 300) return '#eab308';
       return '#ef4444';
+    }
+
+    function formatBytes(bytes) {
+      const n = Number(bytes || 0);
+      if (n < 1024) return `${n} B`;
+      if (n < 1024 * 1024) return `${(n / 1024).toFixed(2)} KB`;
+      if (n < 1024 * 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(2)} MB`;
+      return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+    }
+
+    function formatUptimeCompact(seconds) {
+      const total = Number(seconds || 0);
+      const d = Math.floor(total / 86400);
+      const h = Math.floor((total % 86400) / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const s = total % 60;
+      const parts = [];
+      if (d) parts.push(`${d}d`);
+      if (h) parts.push(`${h}h`);
+      if (m) parts.push(`${m}m`);
+      if (s || parts.length === 0) parts.push(`${s}s`);
+      return parts.join(' ');
     }
 
     function formatTimeAgo(dateString) {

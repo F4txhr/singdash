@@ -126,7 +126,7 @@ app.use((req, res, next) => {
 });
 
 // Clean up old rate limit entries every 5 minutes
-setInterval(() => {
+const rateLimitCleanupInterval = setInterval(() => {
   const now = Date.now();
   for (const [ip, record] of rateLimitStore.entries()) {
     if (now > record.resetTime) {
@@ -134,6 +134,11 @@ setInterval(() => {
     }
   }
 }, 5 * 60 * 1000);
+
+// Prevent this timer from keeping Node.js process alive in test environments
+if (typeof rateLimitCleanupInterval.unref === 'function') {
+  rateLimitCleanupInterval.unref();
+}
 
 // ============================================
 // API Versioning
@@ -353,7 +358,9 @@ async function startServer() {
   }
 }
 
-// Start the server
-startServer();
+// Start the server only when run directly (not during tests)
+if (require.main === module) {
+  startServer();
+}
 
 module.exports = app;
