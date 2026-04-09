@@ -440,7 +440,7 @@ async function handlePing(env, url) {
  * Get official bandwidth (data transfer) from Cloudflare GraphQL API.
  * Uses KV cache for 10 minutes to avoid rate limits.
  */
-async function getOfficialBandwidth(env) {
+async function getOfficialBandwidth(env, url) {
   const cacheKey = 'cached_official_bandwidth';
   const cacheTtlMs = 10 * 60 * 1000;
 
@@ -459,11 +459,23 @@ async function getOfficialBandwidth(env) {
       };
     }
 
+    const hostname = url?.hostname || '';
+    if (hostname.endsWith('workers.dev')) {
+      return {
+        total_bytes: null,
+        total_mb: null,
+        total_gb: null,
+        source: 'unavailable',
+        reason: 'Custom domain not configured',
+        cache: { hit: false, cached_at: null, ttl_seconds: 0 }
+      };
+    }
+
     if (!env.ZONE_ID || !env.CF_API_TOKEN) {
       return {
-        total_bytes: 0,
-        total_mb: '0.00',
-        total_gb: '0.000',
+        total_bytes: null,
+        total_mb: null,
+        total_gb: null,
         source: 'unavailable',
         reason: 'Missing ZONE_ID or CF_API_TOKEN',
         cache: { hit: false, cached_at: null, ttl_seconds: 0 }
@@ -540,9 +552,9 @@ async function getOfficialBandwidth(env) {
   } catch (error) {
     console.error('Error getting official bandwidth:', error);
     return {
-      total_bytes: 0,
-      total_mb: '0.00',
-      total_gb: '0.000',
+      total_bytes: null,
+      total_mb: null,
+      total_gb: null,
       source: 'error',
       reason: error.message,
       cache: { hit: false, cached_at: null, ttl_seconds: 0 }
@@ -557,7 +569,7 @@ async function getOfficialBandwidth(env) {
 async function handleStats(env, url) {
   try {
     const stats = await getStatsFromKV(env);
-    const officialBandwidth = await getOfficialBandwidth(env);
+    const officialBandwidth = await getOfficialBandwidth(env, url);
     
     if (!stats) {
       return new Response(JSON.stringify({
