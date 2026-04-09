@@ -266,14 +266,6 @@
     <div class="panel" style="width: 500px; max-width: 90vw;">
       <div class="panel-title">⚙️ Configuration</div>
       <div class="form-group">
-        <label>Supabase URL</label>
-        <input type="text" id="configSupabaseUrl" placeholder="https://xxxxx.supabase.co">
-      </div>
-      <div class="form-group">
-        <label>Supabase Anon Key</label>
-        <input type="text" id="configSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
-      </div>
-      <div class="form-group">
         <label>Testing API URL</label>
         <input type="text" id="configApiUrl" placeholder="http://localhost:3001">
       </div>
@@ -282,12 +274,11 @@
         <button class="btn btn-primary" onclick="saveSettings()">💾 Save</button>
       </div>
       <div class="config-box" style="margin-top: 16px;">
-        <h4>ℹ️ How to get credentials:</h4>
+        <h4>ℹ️ Full-stack mode:</h4>
         <p style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">
-          1. Go to <a href="https://supabase.com" target="_blank">supabase.com</a><br>
-          2. Open your project → Settings → API<br>
-          3. Copy URL and anon/public key<br>
-          4. Testing API is your VPS IP: http://YOUR-IP:3001
+          Supabase credentials disimpan aman di Vercel Environment Variables (server-side).<br>
+          Di dashboard kamu hanya perlu isi endpoint Testing API (VPS Alibaba).<br>
+          Contoh: <code>https://api-domain-kamu:3001</code>
         </p>
       </div>
     </div>
@@ -296,8 +287,6 @@
   <script>
     // Configuration
     let config = {
-      supabaseUrl: localStorage.getItem('supabaseUrl') || '',
-      supabaseKey: localStorage.getItem('supabaseKey') || '',
       apiUrl: localStorage.getItem('apiUrl') || 'http://localhost:3001'
     };
 
@@ -306,39 +295,33 @@
 
     // Initialize
     window.addEventListener('DOMContentLoaded', () => {
-      if (!config.supabaseUrl || !config.supabaseKey) {
-        showSettings();
-        showMessage('Please configure Supabase credentials first', 'warning');
-      } else {
-        loadProxies();
-        loadWorkers();
-        loadHistory();
-      }
+      showSettings();
+      loadProxies();
+      loadWorkers();
+      loadHistory();
     });
 
-    // Supabase Helper
-    async function supabaseQuery(table, options = {}) {
+    // DB Helper (Vercel API bridge)
+    async function dbQuery(table, options = {}) {
       const { method = 'GET', body = null, select = '*', filter = null } = options;
 
-      let url = `${config.supabaseUrl}/rest/v1/${table}?select=${select}`;
-      if (filter) url += `&${filter}`;
+      const url = `/api/db?table=${encodeURIComponent(table)}&select=${encodeURIComponent(select)}${filter ? `&filter=${encodeURIComponent(filter)}` : ''}`;
 
       const fetchOptions = {
         method,
         headers: {
-          'apikey': config.supabaseKey,
-          'Authorization': `Bearer ${config.supabaseKey}`,
-          'Content-Type': 'application/json',
-          'Prefer': method === 'POST' || method === 'PATCH' ? 'return=representation' : ''
+          'Content-Type': 'application/json'
         }
       };
 
-      if (body) fetchOptions.body = JSON.stringify(body);
+      if (body || method === 'PATCH' || method === 'DELETE') {
+        fetchOptions.body = JSON.stringify({ table, body, filter, select });
+      }
 
       const res = await fetch(url, fetchOptions);
       if (!res.ok) {
         const error = await res.text();
-        throw new Error(`Supabase error: ${res.status} - ${error}`);
+        throw new Error(`DB API error: ${res.status} - ${error}`);
       }
 
       return res.json();
@@ -358,8 +341,6 @@
 
     // Settings
     function showSettings() {
-      document.getElementById('configSupabaseUrl').value = config.supabaseUrl;
-      document.getElementById('configSupabaseKey').value = config.supabaseKey;
       document.getElementById('configApiUrl').value = config.apiUrl;
       document.getElementById('settingsModal').classList.remove('hidden');
     }
@@ -369,12 +350,7 @@
     }
 
     function saveSettings() {
-      config.supabaseUrl = document.getElementById('configSupabaseUrl').value.replace(/\/$/, '');
-      config.supabaseKey = document.getElementById('configSupabaseKey').value;
       config.apiUrl = document.getElementById('configApiUrl').value.replace(/\/$/, '');
-
-      localStorage.setItem('supabaseUrl', config.supabaseUrl);
-      localStorage.setItem('supabaseKey', config.supabaseKey);
       localStorage.setItem('apiUrl', config.apiUrl);
 
       closeSettings();
@@ -404,7 +380,7 @@
     // Load Proxies from Supabase
     async function loadProxies() {
       try {
-        proxies = await supabaseQuery('proxy_cache', {
+        proxies = await dbQuery('proxy_cache', {
           select: '*',
           filter: 'order=created_at.desc&limit=500'
         });
@@ -516,7 +492,7 @@
           last_tested_at: null
         }));
 
-        await supabaseQuery('proxy_cache', {
+        await dbQuery('proxy_cache', {
           method: 'POST',
           body: toInsert
         });
@@ -593,7 +569,7 @@
           if (res.results) {
             // Update each proxy in Supabase
             for (const result of res.results) {
-              await supabaseQuery('proxy_cache', {
+              await dbQuery('proxy_cache', {
                 method: 'PATCH',
                 body: {
                   status: result.status,
@@ -622,7 +598,7 @@
       try {
         const res = await apiCall(`/api/v1/proxies/test-single?ip=${proxy.ip}&port=${proxy.port}`);
 
-        await supabaseQuery('proxy_cache', {
+        await dbQuery('proxy_cache', {
           method: 'PATCH',
           body: {
             status: res.result.status,
@@ -653,7 +629,7 @@
       }
 
       try {
-        await supabaseQuery('proxy_cache', {
+        await dbQuery('proxy_cache', {
           method: 'POST',
           body: [{
             ip, port, country_code: country, provider,
@@ -699,7 +675,7 @@
           last_tested_at: null
         }));
 
-        await supabaseQuery('proxy_cache', {
+        await dbQuery('proxy_cache', {
           method: 'POST',
           body: toInsert
         });
@@ -719,7 +695,7 @@
 
       const proxy = proxies[index];
       try {
-        await supabaseQuery('proxy_cache', {
+        await dbQuery('proxy_cache', {
           method: 'DELETE',
           filter: `ip=eq.${proxy.ip}&port=eq.${proxy.port}`
         });
@@ -737,7 +713,7 @@
       if (!confirm('Delete all dead proxies?')) return;
 
       try {
-        await supabaseQuery('proxy_cache', {
+        await dbQuery('proxy_cache', {
           method: 'DELETE',
           filter: 'status=eq.dead'
         });
@@ -785,7 +761,7 @@
     // Workers
     async function loadWorkers() {
       try {
-        workers = await supabaseQuery('workers', {
+        workers = await dbQuery('workers', {
           select: '*',
           filter: 'order=created_at.desc'
         });
@@ -826,7 +802,7 @@
       }
 
       try {
-        await supabaseQuery('workers', {
+        await dbQuery('workers', {
           method: 'POST',
           body: [{ name, url, status: 'active' }]
         });
@@ -844,7 +820,7 @@
     // History
     async function loadHistory() {
       try {
-        const history = await supabaseQuery('test_history', {
+        const history = await dbQuery('test_history', {
           select: '*',
           filter: 'order=tested_at.desc&limit=50'
         });
