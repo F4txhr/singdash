@@ -439,15 +439,15 @@
               <span class="flag">${getFlag(p.country_code)}</span>
               <div>
                 <div class="name">${p.country_code || 'Unknown'}</div>
-                <div class="isp">${p.provider || 'Unknown'}</div>
+                <div class="isp">${p.isp || p.provider || 'Unknown'}</div>
               </div>
             </div>
             <span class="card-status ${p.status || 'untested'}">${getStatusIcon(p.status)} ${p.status || 'untested'}</span>
           </div>
           <div class="card-info">
             <div>📍 <code>${p.ip}:${p.port}</code></div>
-            ${p.response_time_ms ? `<div>⏱️ <span style="color: ${getPingColor(p.response_time_ms)}">${p.response_time_ms}ms</span></div>` : ''}
-            ${p.last_tested_at ? `<div style="font-size: 11px; color: #9ca3af;">🕒 ${formatTimeAgo(p.last_tested_at)}</div>` : ''}
+            ${p.ping_ms ? `<div>⏱️ <span style="color: ${getPingColor(p.ping_ms)}">${p.ping_ms}ms</span></div>` : ''}
+            ${p.tested_at ? `<div style="font-size: 11px; color: #9ca3af;">🕒 ${formatTimeAgo(p.tested_at)}</div>` : ''}
           </div>
           <div class="card-actions">
             <button class="btn-test" onclick="testSingle(${proxies.indexOf(p)})">🔄 Test</button>
@@ -466,7 +466,7 @@
         const matchSearch = !search ||
           p.ip.toLowerCase().includes(search) ||
           (p.country_code || '').toLowerCase().includes(search) ||
-          (p.provider || '').toLowerCase().includes(search);
+          ((p.isp || p.provider || '')).toLowerCase().includes(search);
 
         const matchStatus = !status || (p.status || 'untested') === status;
 
@@ -498,9 +498,8 @@
           ip: p.ip,
           port: p.port,
           country_code: p.country_code || 'XX',
-          provider: p.provider || 'Unknown',
-          status: 'untested',
-          last_tested_at: null
+          isp: p.provider || 'Unknown',
+          status: null
         }));
 
         await dbQuery('proxy_cache', {
@@ -567,30 +566,25 @@
       showMessage(`Testing ${toTest.length} proxies...`, 'warning');
 
       try {
-        const results = [];
-
-        // Test in batches of 50
-        for (let i = 0; i < toTest.length; i += 50) {
-          const batch = toTest.slice(i, i + 50);
-
-          const res = await apiCall('/api/v1/proxies/test-batch', {
-            body: { proxies: batch }
+        // Sequential to keep API load safe on small VPS
+        for (const proxy of toTest) {
+          const res = await apiCall('/api/proxies/test-single', {
+            body: { ip: proxy.ip, port: proxy.port, protocol: 'quick' }
           });
 
-          if (res.results) {
-            // Update each proxy in Supabase
-            for (const result of res.results) {
-              await dbQuery('proxy_cache', {
-                method: 'PATCH',
-                body: {
-                  status: result.status,
-                  response_time_ms: result.response_time_ms,
-                  last_tested_at: new Date().toISOString()
-                },
-                filter: `ip=eq.${result.ip}&port=eq.${result.port}`
-              });
-            }
-          }
+          const data = res.data || res.result || {};
+          await dbQuery('proxy_cache', {
+            method: 'PATCH',
+            body: {
+              status: data.status,
+              ping_ms: data.response_time_ms || data.latency || null,
+              tested_at: new Date().toISOString(),
+              isp: data.isp || proxy.isp || null,
+              country_code: data.country_code || proxy.country_code || 'XX',
+              country_name: data.country_name || proxy.country_name || null
+            },
+            filter: `ip=eq.${proxy.ip}&port=eq.${proxy.port}`
+          });
         }
 
         showMessage('✅ All proxies tested!', 'success');
@@ -607,14 +601,20 @@
     async function testSingle(index) {
       const proxy = proxies[index];
       try {
-        const res = await apiCall(`/api/v1/proxies/test-single?ip=${proxy.ip}&port=${proxy.port}`);
+        const res = await apiCall('/api/proxies/test-single', {
+          body: { ip: proxy.ip, port: proxy.port, protocol: 'quick' }
+        });
+        const data = res.data || res.result || {};
 
         await dbQuery('proxy_cache', {
           method: 'PATCH',
           body: {
-            status: res.result.status,
-            response_time_ms: res.result.response_time_ms,
-            last_tested_at: new Date().toISOString()
+            status: data.status,
+            ping_ms: data.response_time_ms || data.latency || null,
+            tested_at: new Date().toISOString(),
+            isp: data.isp || proxy.isp || null,
+            country_code: data.country_code || proxy.country_code || 'XX',
+            country_name: data.country_name || proxy.country_name || null
           },
           filter: `ip=eq.${proxy.ip}&port=eq.${proxy.port}`
         });
@@ -643,9 +643,11 @@
         await dbQuery('proxy_cache', {
           method: 'POST',
           body: [{
-            ip, port, country_code: country, provider,
-            status: 'untested',
-            last_tested_at: null
+            ip,
+            port,
+            country_code: country,
+            isp: provider,
+            status: null
           }]
         });
 
@@ -681,9 +683,8 @@
           ip: p.ip,
           port: p.port,
           country_code: p.country_code,
-          provider: p.provider,
-          status: 'untested',
-          last_tested_at: null
+          isp: p.provider,
+          status: null
         }));
 
         await dbQuery('proxy_cache', {
@@ -742,19 +743,23 @@
       const proxy = proxies[index];
 
       try {
-        const res = await apiCall('/api/v1/config/generate', {
+        const workerDomain = prompt('Masukkan worker domain (contoh: worker.example.workers.dev)');
+        if (!workerDomain) return;
+
+        const res = await apiCall('/api/config/generate', {
           body: {
-            type: 'singbox',
-            proxies: [{
-              ip: proxy.ip,
-              port: proxy.port,
-              country_code: proxy.country_code
-            }]
+            ip: proxy.ip,
+            port: proxy.port,
+            country_code: proxy.country_code,
+            isp: proxy.isp || 'Unknown',
+            protocol: 'trojan',
+            format: 'singbox',
+            worker_domain: workerDomain
           }
         });
 
-        if (res.config) {
-          const blob = new Blob([res.config], { type: 'application/json' });
+        if (res.data?.config) {
+          const blob = new Blob([JSON.stringify(res.data.config, null, 2)], { type: 'application/json' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
@@ -787,8 +792,8 @@
           <div class="card" style="margin-bottom: 12px;">
             <div class="card-header">
               <div>
-                <div class="name">${w.name}</div>
-                <div class="isp">${w.url}</div>
+                <div class="name">${w.name || w.domain || 'Unnamed Worker'}</div>
+                <div class="isp">${w.domain || '-'}</div>
               </div>
               <span class="card-status ${w.status}">${w.status}</span>
             </div>
@@ -815,7 +820,7 @@
       try {
         await dbQuery('workers', {
           method: 'POST',
-          body: [{ name, url, status: 'active' }]
+          body: [{ name, domain: url, status: 'active', active: true }]
         });
 
         showMessage('✅ Worker registered!', 'success');
@@ -833,19 +838,19 @@
       try {
         const history = await dbQuery('test_history', {
           select: '*',
-          filter: 'order=tested_at.desc&limit=50'
+          filter: 'order=started_at.desc&limit=50'
         });
 
         const tbody = document.getElementById('historyBody');
         tbody.innerHTML = history.map(h => `
           <tr>
-            <td>${formatDate(h.tested_at)}</td>
-            <td><span class="badge">${h.test_type || 'manual'}</span></td>
-            <td>${h.proxies_tested || '-'}</td>
-            <td style="color: #22c55e;">${h.proxies_alive || '-'}</td>
-            <td style="color: #eab308;">${h.proxies_slow || '-'}</td>
-            <td style="color: #ef4444;">${h.proxies_dead || '-'}</td>
-            <td>${h.avg_response_time_ms ? h.avg_response_time_ms + 'ms' : '-'}</td>
+            <td>${formatDate(h.started_at)}</td>
+            <td><span class="badge">${h.status || 'manual'}</span></td>
+            <td>${h.total_tested || '-'}</td>
+            <td style="color: #22c55e;">${h.total_alive || '-'}</td>
+            <td style="color: #eab308;">${h.total_slow || '-'}</td>
+            <td style="color: #ef4444;">${h.total_dead || '-'}</td>
+            <td>${h.duration_ms ? h.duration_ms + 'ms' : '-'}</td>
           </tr>
         `).join('');
 
