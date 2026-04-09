@@ -870,15 +870,10 @@
         const data = payload.data || {};
         const uptimeSeconds = data.uptime?.total_seconds || 0;
         const totalRequests = data.requests?.total || 0;
-        let totalBandwidth = null;
-
-        if (customDomain) {
-          const cfRes = await fetch(`/api/cf-bandwidth?domain=${encodeURIComponent(customDomain)}&since_days=30`);
-          if (!cfRes.ok) throw new Error(`Cloudflare GraphQL stats failed (${cfRes.status})`);
-
-          const cfPayload = await cfRes.json();
-          totalBandwidth = cfPayload?.data?.bandwidth?.total_bytes || 0;
-        }
+        const officialBandwidth = data.official_bandwidth || null;
+        const totalBandwidth = officialBandwidth?.source === 'cloudflare_graphql'
+          ? (officialBandwidth?.total_bytes || 0)
+          : null;
 
         await dbQuery('workers', {
           method: 'PATCH',

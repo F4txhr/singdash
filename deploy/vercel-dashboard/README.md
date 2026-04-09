@@ -47,4 +47,5 @@ vercel dev
 
 - `Worker URL` wajib (contoh `https://xxx.workers.dev`)
 - `Custom Domain` opsional (contoh `https://vpn.example.com`)
-- Bandwidth dashboard akan diambil via **Cloudflare GraphQL API** (`https://api.cloudflare.com/client/v4/graphql`) berdasarkan `Custom Domain` jika field ini diisi.
+- `Custom Domain` bersifat opsional. Jika worker tidak memakai custom domain, monitoring tetap jalan normal namun `official_bandwidth` bisa tidak tersedia.
+- Dashboard cukup fetch endpoint worker (`/stats`), lalu membaca field `official_bandwidth` yang sudah disediakan worker.
