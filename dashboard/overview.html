@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Sing-box Dashboard Overview</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+
+
+
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b6cee",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "destructive": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+
+
+
+    </script>
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.fill { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen">
+    <div class="relative flex min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden">
+        <!-- TopAppBar -->
+        <div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-40">
+            <div class="text-white flex size-12 shrink-0 items-center">
+                <span class="material-symbols-outlined text-2xl">menu</span>
+            </div>
+            <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Overview</h2>
+            <div class="flex w-12 items-center justify-end">
+                <a href="config.html" class="flex size-12 items-center justify-end">
+                    <span class="material-symbols-outlined text-2xl text-white">settings</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="flex flex-wrap gap-4 p-4">
+            <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 bg-white/5 border border-white/10">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-sm">upload</span>
+                    <p class="text-white/60 text-sm font-medium leading-normal uppercase tracking-wider">Upload</p>
+                </div>
+                <p id="upload-speed" class="text-white tracking-tight text-3xl font-bold leading-tight">0 <span class="text-lg font-medium opacity-60">B/s</span></p>
+            </div>
+            <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 bg-white/5 border border-white/10">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-sm">download</span>
+                    <p class="text-white/60 text-sm font-medium leading-normal uppercase tracking-wider">Download</p>
+                </div>
+                <p id="download-speed" class="text-white tracking-tight text-3xl font-bold leading-tight">0 <span class="text-lg font-medium opacity-60">B/s</span></p>
+            </div>
+        </div>
+
+        <!-- Section Header -->
+        <h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Network Traffic</h3>
+        <div class="px-4 py-2">
+            <div class="bg-white/5 border border-white/10 rounded-xl p-4 min-h-[150px] flex items-center justify-center">
+                 <p class="text-white/40 text-sm italic">Traffic chart visualization will be integrated with real-time data.</p>
+            </div>
+        </div>
+
+        <!-- Status Section -->
+        <h3 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-6">Active Status</h3>
+        <div class="px-4 pb-32 space-y-3">
+            <div class="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <div id="service-dot" class="size-2 rounded-full bg-primary shadow-[0_0_8px_#13ec5b]"></div>
+                    <span class="text-white text-sm font-medium">Service Status</span>
+                </div>
+                <span id="service-status" class="text-primary text-sm font-bold uppercase tracking-wider">Running</span>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script type="module">
+        import api from './js/api.js';
+        import { formatBytes } from './js/utils.js';
+
+        const uploadEl = document.getElementById('upload-speed');
+        const downloadEl = document.getElementById('download-speed');
+
+        try {
+            api.getTraffic((data) => {
+                const up = formatBytes(data.up).split(' ');
+                const down = formatBytes(data.down).split(' ');
+
+                uploadEl.innerHTML = `${up[0]} <span class="text-lg font-medium opacity-60">${up[1]}/s</span>`;
+                downloadEl.innerHTML = `${down[0]} <span class="text-lg font-medium opacity-60">${down[1]}/s</span>`;
+            });
+        } catch (e) {
+            console.error('Failed to connect to traffic WebSocket', e);
+        }
+    </script>
+
+<nav id="main-nav" class="fixed bottom-0 left-0 right-0 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-2 flex justify-between items-center z-50">
+        <a href="overview.html" class="flex flex-col items-center gap-1 text-primary">
+            <span class="material-symbols-outlined text-2xl"> dashboard </span>
+            <span class="text-[10px] font-bold"> Overview </span>
+        </a>
+        <a href="proxies.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> shield_with_heart </span>
+            <span class="text-[10px] font-medium"> Proxies </span>
+        </a>
+        <a href="rules.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> rule </span>
+            <span class="text-[10px] font-medium"> Rules </span>
+        </a>
+        <a href="connections.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> sync_alt </span>
+            <span class="text-[10px] font-medium"> Conns </span>
+        </a>
+        <a href="logs.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> terminal </span>
+            <span class="text-[10px] font-medium"> Logs </span>
+        </a>
+        <a href="config.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> settings </span>
+            <span class="text-[10px] font-medium"> Config </span>
+        </a></nav>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Proxies Selection</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+
+
+
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b6cee",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "destructive": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+
+
+
+    </script>
+    <style>
+        .active-glow { box-shadow: 0 0 15px rgba(19, 236, 91, 0.2); border: 1px solid #13ec5b; }
+        body { font-family: "Space Grotesk", sans-serif; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen">
+    <header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">router</span>
+            <h1 class="text-xl font-bold tracking-tight">Proxies</h1>
+        </div>
+        <button id="test-latency" class="flex items-center gap-2 border border-primary/50 text-primary px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-primary/10 transition-colors">
+            <span class="material-symbols-outlined text-[18px]">speed</span>
+            <span>Test Latency</span>
+        </button>
+    </header>
+
+    <main id="proxy-groups-container" class="pb-32 pt-4">
+        <!-- Proxy groups will be injected here -->
+        <div class="px-4 py-8 text-center text-white/40 italic">
+            Loading proxies...
+        </div>
+    </main>
+
+
+
+    <script type="module">
+        import api from './js/api.js';
+
+        const container = document.getElementById('proxy-groups-container');
+
+        const renderProxies = async () => {
+            try {
+                const data = await api.getProxies();
+                const groups = data.providers ? Object.values(data.providers).flatMap(p => p.proxies) : Object.values(data.proxies);
+                // For simplicity, we use data.proxies as most Clash/Sing-box APIs return { proxies: { ... } }
+                const proxyData = data.proxies || {};
+
+                container.innerHTML = '';
+
+                Object.entries(proxyData).forEach(([groupName, group]) => {
+                    if (group.type !== 'Selector' && group.type !== 'URLTest' && group.type !== 'Fallback') return;
+
+                    const section = document.createElement('section');
+                    section.className = 'mb-8';
+
+                    const header = `
+                        <div class="flex items-center justify-between px-4 pb-3">
+                            <h2 class="text-lg font-bold">${groupName} <span class="text-xs font-normal opacity-50 ml-2">(${group.type})</span></h2>
+                            <span class="text-primary text-sm font-medium">${group.now || ''}</span>
+                        </div>
+                    `;
+
+                    const grid = document.createElement('div');
+                    grid.className = 'grid grid-cols-2 gap-3 px-4';
+
+                    group.all.forEach(proxyName => {
+                        const isActive = group.now === proxyName;
+                        const card = document.createElement('div');
+                        card.className = `rounded-xl p-3 flex flex-col justify-between h-24 cursor-pointer border ${isActive ? 'active-glow bg-primary/10 border-primary' : 'bg-white/5 border-white/10'}`;
+
+                        card.innerHTML = `
+                            <div class="flex justify-between items-start">
+                                <span class="text-white font-bold text-sm leading-tight truncate pr-2">${proxyName}</span>
+                                ${isActive ? '<div class="size-2 bg-primary rounded-full animate-pulse"></div>' : ''}
+                            </div>
+                        `;
+
+                        card.onclick = async () => {
+                            try {
+                                await api.selectProxy(groupName, proxyName);
+                                renderProxies(); // Re-render after selection
+                            } catch (e) {
+                                alert('Failed to select proxy: ' + e.message);
+                            }
+                        };
+
+                        grid.appendChild(card);
+                    });
+
+                    section.innerHTML = header;
+                    section.appendChild(grid);
+                    container.appendChild(section);
+                });
+            } catch (e) {
+                container.innerHTML = `<div class="p-8 text-red-500">Error: ${e.message}. Make sure Sing-box is running and External Controller is enabled.</div>`;
+            }
+        };
+
+        renderProxies();
+    </script>
+<nav id="main-nav" class="fixed bottom-0 left-0 right-0 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-2 flex justify-between items-center z-50">
+        <a href="overview.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> dashboard </span>
+            <span class="text-[10px] font-medium"> Overview </span>
+        </a>
+        <a href="proxies.html" class="flex flex-col items-center gap-1 text-primary">
+            <span class="material-symbols-outlined text-2xl"> shield_with_heart </span>
+            <span class="text-[10px] font-bold"> Proxies </span>
+        </a>
+        <a href="rules.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> rule </span>
+            <span class="text-[10px] font-medium"> Rules </span>
+        </a>
+        <a href="connections.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> sync_alt </span>
+            <span class="text-[10px] font-medium"> Conns </span>
+        </a>
+        <a href="logs.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> terminal </span>
+            <span class="text-[10px] font-medium"> Logs </span>
+        </a>
+        <a href="config.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> settings </span>
+            <span class="text-[10px] font-medium"> Config </span>
+        </a></nav>
+</body>
+</html>

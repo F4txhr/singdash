@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Real-time Log Viewer</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+
+
+
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b6cee",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "destructive": "#ef4444",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+
+
+
+    </script>
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; }
+        .log-container::-webkit-scrollbar { width: 4px; }
+        .log-container::-webkit-scrollbar-thumb { background: rgba(19, 236, 91, 0.2); border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white min-h-screen">
+    <div class="relative flex flex-col h-full w-full">
+        <!-- Header -->
+        <header class="p-4 bg-background-light dark:bg-background-dark border-b border-slate-200 dark:border-white/5 shrink-0">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary text-2xl">terminal</span>
+                    <h1 class="text-xl font-bold tracking-tight">System Logs</h1>
+                </div>
+                <div class="flex gap-2">
+                    <button id="clear-logs" class="size-9 flex items-center justify-center rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors">
+                        <span class="material-symbols-outlined text-[20px]">delete_sweep</span>
+                    </button>
+                    <button id="pause-logs" class="size-9 flex items-center justify-center rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+                        <span id="pause-icon" class="material-symbols-outlined text-[20px]">pause</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Search bar -->
+            <div class="mb-3">
+                <label class="flex flex-col min-w-40 h-11 w-full">
+                    <div class="flex items-stretch rounded-xl h-11 bg-slate-200/50 dark:bg-surface-dark border border-transparent focus-within:border-primary/50 transition-all">
+                        <div class="flex items-center justify-center pl-4 text-slate-400">
+                            <span class="material-symbols-outlined text-[20px]">search</span>
+                        </div>
+                        <input id="log-filter" class="w-full bg-transparent border-none focus:ring-0 text-sm placeholder:text-slate-500 py-0 px-3" placeholder="Filter logs..." value=""/>
+                    </div>
+                </label>
+            </div>
+        </header>
+
+        <!-- Log Terminal Content -->
+        <main id="log-list" class="flex-1 overflow-y-auto bg-slate-100 dark:bg-terminal-dark log-container p-4 space-y-1 font-mono">
+            <div class="text-white/40 italic text-sm">Waiting for logs...</div>
+        </main>
+
+        <!-- Bottom Navigation -->
+
+    </div>
+
+    <script type="module">
+        import api from './js/api.js';
+
+        const logList = document.getElementById('log-list');
+        const clearBtn = document.getElementById('clear-logs');
+        const pauseBtn = document.getElementById('pause-logs');
+        const pauseIcon = document.getElementById('pause-icon');
+        const filterInput = document.getElementById('log-filter');
+
+        let isPaused = false;
+        let logs = [];
+
+        clearBtn.addEventListener('click', () => {
+            logs = [];
+            logList.innerHTML = '';
+        });
+
+        pauseBtn.addEventListener('click', () => {
+            isPaused = !isPaused;
+            pauseIcon.innerText = isPaused ? 'play_arrow' : 'pause';
+            pauseBtn.classList.toggle('text-amber-500', isPaused);
+            pauseBtn.classList.toggle('bg-amber-500/10', isPaused);
+        });
+
+        const addLog = (log) => {
+            if (isPaused) return;
+
+            const filter = filterInput.value.toLowerCase();
+            if (filter && !log.payload.toLowerCase().includes(filter)) return;
+
+            const entry = document.createElement('div');
+            entry.className = 'flex flex-col gap-1 py-1 group';
+
+            const levelClass = {
+                'info': 'bg-green-500/10 text-green-500 border-green-500/20',
+                'warn': 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
+                'error': 'bg-red-500/10 text-red-500 border-red-500/20',
+                'debug': 'bg-slate-500/10 text-slate-500 border-slate-500/20'
+            }[log.type.toLowerCase()] || 'bg-slate-500/10 text-slate-500';
+
+            const time = new Date().toLocaleTimeString();
+
+            entry.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] text-slate-500 dark:text-slate-600 leading-none">${time}</span>
+                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${levelClass} border">${log.type}</span>
+                </div>
+                <div class="text-[13px] leading-relaxed text-slate-700 dark:text-slate-300 break-all">
+                    ${log.payload}
+                </div>
+            `;
+
+            if (logList.children[0] && logList.children[0].innerText.includes('Waiting')) {
+                logList.innerHTML = '';
+            }
+
+            logList.appendChild(entry);
+            logList.scrollTop = logList.scrollHeight;
+
+            // Keep only last 200 logs
+            if (logList.children.length > 200) {
+                logList.removeChild(logList.children[0]);
+            }
+        };
+
+        try {
+            api.getLogs(addLog);
+        } catch (e) {
+            console.error('Failed to connect to logs WebSocket', e);
+        }
+    </script>
+<nav id="main-nav" class="fixed bottom-0 left-0 right-0 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-2 flex justify-between items-center z-50">
+        <a href="overview.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> dashboard </span>
+            <span class="text-[10px] font-medium"> Overview </span>
+        </a>
+        <a href="proxies.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> shield_with_heart </span>
+            <span class="text-[10px] font-medium"> Proxies </span>
+        </a>
+        <a href="rules.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> rule </span>
+            <span class="text-[10px] font-medium"> Rules </span>
+        </a>
+        <a href="connections.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> sync_alt </span>
+            <span class="text-[10px] font-medium"> Conns </span>
+        </a>
+        <a href="logs.html" class="flex flex-col items-center gap-1 text-primary">
+            <span class="material-symbols-outlined text-2xl"> terminal </span>
+            <span class="text-[10px] font-bold"> Logs </span>
+        </a>
+        <a href="config.html" class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-symbols-outlined text-2xl"> settings </span>
+            <span class="text-[10px] font-medium"> Config </span>
+        </a></nav>
+</body>
+</html>
